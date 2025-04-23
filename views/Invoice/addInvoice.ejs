@@ -1,0 +1,259 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include ('../partials/head') %>
+  <body>
+    <div class="relative flex flex-col min-h-screen bg-slate-200">
+      <%- include ('../partials/header') %>
+
+      <form action="/addinvoice" method="post" >
+      <div class="flex flex-row">
+        <div class="w-[220px] p-4"><%- include ('../partials/sidebar') %></div>
+        <main
+          class="cal relative top-16 p-4 overflow-auto"
+          style="width: calc(100% - 220px)">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Create Invoice
+          </h2>
+          <div class="bg-white px-6 py-2">
+        
+              <div class="flex flex-col gap-4">
+                <!-- Select Supplier -->
+                <input
+                type="text"
+                name="customer_name"
+                id="customerSearch"
+                autocomplete="off"
+                class="w-full text-gray-600 border-gray-300 border px-2 py-1 focus:ring focus:ring-blue-300"
+                placeholder="Search Customer" />
+              
+              <ul id="customerSuggestions" class="bg-white border border-gray-200 mt-1 rounded shadow text-sm max-h-60 overflow-y-auto hidden"></ul>
+              <script>
+                const input = document.getElementById("customerSearch");
+                const suggestions = document.getElementById("customerSuggestions");
+              
+                input.addEventListener("input", async function () {
+                  const query = this.value;
+              
+                  if (query.length < 2) {
+                    suggestions.classList.add("hidden");
+                    return;
+                  }
+              
+                  try {
+                    const res = await fetch(`/search-customers?q=${query}`);
+                    const customers = await res.json();
+              
+                    suggestions.innerHTML = "";
+                    customers.forEach((cust) => {
+                      const li = document.createElement("li");
+                      li.textContent = `${cust.customer_name} - ${cust.mobile}`;
+                      li.className = "p-2 hover:bg-gray-100 cursor-pointer";
+                      li.addEventListener("click", () => {
+                        input.value = cust.customer_name;
+                        suggestions.classList.add("hidden");
+                      });
+                      suggestions.appendChild(li);
+                    });
+              
+                    suggestions.classList.remove("hidden");
+                  } catch (err) {
+                    console.error("Failed to fetch customers:", err);
+                  }
+                });
+              
+                // Hide on blur
+                document.addEventListener("click", (e) => {
+                  if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.classList.add("hidden");
+                  }
+                });
+              </script>
+              
+                
+                <!-- Date Picker -->
+                <div class="flex gap-3 items-top">
+                  <label class="w-52 text-gray-700"
+                    >Date <span class="text-red-500">*</span></label
+                  >
+                  <input
+                    type="date"
+                    class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" />
+                </div>
+              </div>
+
+         
+              <div class="flex gap-3 items-top">
+                <a href="/addCustomers" class="px-3 py-1 bg-green-500 text-white text-sm">New Customer</a>
+              </div>
+           
+          </div>
+          <div class="bg-white p-5">
+            <table class="w-full border-collapse border border-gray-200">
+              <thead>
+                <tr class="text-left text-gray-700 text-sm">
+                  <th class="p-2 border border-gray-200">
+                    Item Information <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Avaliable Qty <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Quantity <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Unit code 
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Rate 
+                  </th>
+                  <th class="p-2 border border-gray-200">Discount/item</th>
+                  <th class="p-2 border border-gray-200">
+                    Total 
+                  </th>
+                  <th class="p-2 border border-gray-200 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-sm">
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="text"
+                      placeholder="product"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value=""
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value=""
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="text"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1 bg-gray-100"
+                      readonly />
+                  </td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="text"
+                      value=""
+                      class="w-full border border-gray-200 px-2 py-1 bg-gray-100"
+                      readonly />
+                  </td>
+                  <td class="p-2 border border-gray-200 text-center">
+                    <button class="bg-red-500 text-white px-3 py-1">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="text-sm">
+                    <td colspan="2" class="p-2 border border-gray-200 text-center">
+                    <button class="bg-teal-500 text-white  px-4 py-1">
+                      Add New Item
+                    </button>
+                  </td>
+                  <td colspan="4" class="p-2 text-right border border-gray-200">Total Discount:</td>
+                  
+                  
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      class="w-full  border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td class="p-2 border border-gray-200"></td>
+                </tr>
+                <!-- Summary Section -->
+                
+                <tr class="text-sm">
+                  
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Payment Type:</td>
+                  
+                  <td colspan="2" class="p-2 border border-gray-200">
+                   <select 
+                    class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300">
+                    <option>Select Payment Type</option>
+                  </select>
+                  </td>
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Grand Total:</td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td></td>
+                </tr>
+
+                <tr class="text-sm">
+                    <td colspan="2" class="border border-gray-200"></td>
+                    <td colspan="2">
+                        <input
+                    type="text"
+                    class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" placeholder="Payment Type Reference #/Details"/>
+                    </td>
+                    <td colspan="2" class="p-2 text-right border border-gray-200">Paid Amount:</td>
+                    <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td></td>
+                </tr>
+                <!-- Submit & Full Paid Buttons -->
+                <tr class="text-sm">
+                    <td colspan="2" class="border border-gray-200"></td>
+                  <td colspan="2" class="p-2 border border-gray-200">
+                    <div class="mt-4 flex gap-4 items-center justify-center">
+                      <button class="bg-green-500 text-white px-3 py-1">
+                        Submit
+                      </button>
+                      <button
+                        class="bg-orange-500 text-white px-3 py-1">
+                        Full Paid
+                      </button>
+                    </div>
+                  </td>
+                  
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Total Due:</td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Add Item Button -->
+          </div>
+        </main>
+      </div>
+    </div>
+  </form>
+  </body>
+</html>

@@ -1,0 +1,114 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include ('../partials/head') %>
+  <body>
+    <div class="relative flex flex-col min-h-screen bg-slate-200">
+      <%- include ('../partials/header') %>
+
+      <div class="flex flex-row">
+        <div class="w-[220px] p-4"><%- include ('../partials/sidebar') %></div>
+        <main
+          class="cal relative top-16 p-4 overflow-auto"
+          style="width: calc(100% - 220px)">
+          <div class="flex flex-row justify-between items-center">
+            <h1 class="text-2xl font-semibold">Profit/Loss Ledger</h1>
+          </div>
+
+          <!-- Table -->
+          <div class="max-w-6xl mx-auto bg-white p-6">
+            <!-- Table Title -->
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+             Profit/Loss Ledger Data
+            </h2>
+
+             <!-- Filters Section -->
+          <div id="creditorsFilterBlock" class="mb-6 flex flex-wrap items-center gap-4 text-sm">
+
+            <p class="font-semibold text-gray-700">Date Range</p>
+            <input type="date" id="startDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+
+            <span class="text-gray-500">to</span>
+            <input type="date" id="endDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+
+            <button id="getCreditorsBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+              Get
+            </button>
+          </div>
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table
+                id="suppliersTable"
+                class="stripe hover w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr
+                    class="font-semibold text-gray-700 border border-gray-200">
+                    <th class="p-3 border border-gray-200">Date</th>
+                    <th class="p-3 border border-gray-200">Invoice</th>
+                    <th class="p-3 border border-gray-200">Product</th>
+                    <th class="p-3 border border-gray-200">Quantity</th>
+                    <th class="p-3 border border-gray-200">Supplier price</th>
+                    <th class="p-3 border border-gray-200">Discount/item</th>
+                    <th class="p-3 border border-gray-200">Supplier Cost</th>
+                    <th class="p-3 border border-gray-200">Sale Cost</th>
+
+                    <th class="p-3 border border-gray-200">Sold</th>
+
+                    <th class="p-3 border border-gray-200">Profit</th>
+                    
+                    
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-t">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    
+                
+                  <td class=" text-center"> No data available in table</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    
+                  </tr>
+                </tbody>
+                 <thead>
+                  <tr
+                    class=" text-gray-700 border border-gray-200">
+                    <th colspan="5" class="p-3 border border-gray-200 "></th>
+                    
+                    
+                    <th class="p-3 border border-gray-200">	Total</th>
+                    <th class="p-3 border border-gray-200">	₦</th>
+
+                    <th class="p-3 border border-gray-200"></th>
+
+                    <th class="p-3 border border-gray-200">Total</th>
+                    <th class="p-3 border border-gray-200">	₦</th>
+                    <th class="p-3 border border-gray-200">	₦</th>
+
+                    
+                    
+                  </tr>
+                </thead>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+    $(document).ready(function () {
+      $("#suppliersTable").DataTable({
+        dom: "Bfrtip",
+        buttons: ["copy", "excel", "csv", "pdf", "print"],
+      });
+    });
+    </script>
+  </body>
+</html>

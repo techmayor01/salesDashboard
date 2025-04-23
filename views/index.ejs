@@ -1,0 +1,138 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include ('partials/head') %>
+  <body class="">
+    <div class="relative flex flex-col min-h-screen bg-slate-200">
+      <%- include ('partials/header') %>
+      <div class="flex flex-row">
+        <div class="lg:w-[220px] lg:p-4"><%- include ('partials/sidebar') %></div>
+        <main
+          class=" relative top-16 p-4 overflow-auto lg:w-[calc(100%-220px)] w-full bg-slate-200"
+          >
+           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <a href="#" class="bg-white border border-gray-200 shadow-sm hover:shadow-md rounded-lg p-4 flex flex-col items-center justify-center text-blue-600 transition">
+              <i class="fa-solid fa-file-invoice-dollar text-xl mb-2"></i>
+              <span class="text-sm">Cash Receivable</span>
+            </a>
+            <a href="#" class="bg-white border border-gray-200 shadow-sm hover:shadow-md rounded-lg p-4 flex flex-col items-center justify-center text-blue-600 transition">
+              <i class="fa-solid fa-boxes-stacked text-xl mb-2"></i>
+              <span class="text-sm">Add Product</span>
+            </a>
+            <a href="#" class="bg-white border border-gray-200 shadow-sm hover:shadow-md rounded-lg p-4 flex flex-col items-center justify-center text-blue-600 transition">
+              <i class="fa-solid fa-file-invoice text-xl mb-2"></i>
+              <span class="text-sm">Add Invoice</span>
+            </a>
+            <a href="#" class="bg-white border border-gray-200 shadow-sm hover:shadow-md rounded-lg p-4 flex flex-col items-center justify-center text-blue-600 transition">
+              <i class="fa-solid fa-building text-xl mb-2"></i>
+              <span class="text-sm">Company Info</span>
+            </a>
+          </div>
+
+          <!-- Summary Title -->
+          <p class="text-sm text-gray-600 mb-3">Last 365 Days Report</p>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-[#f44236] text-white p-6 rounded-lg shadow">
+              <p class="text-2xl font-bold">₦0</p>
+              <span>Total Receivable</span>
+            </div>
+            <div class="bg-[#3e70c9] text-white p-6 rounded-lg shadow">
+              <p class="text-2xl font-bold">₦</p>
+              <span>Total Received Amount</span>
+            </div>
+            <div class="bg-[#f59345] text-white p-6 rounded-lg shadow">
+              <p class="text-2xl font-bold">₦</p>
+              <span>Total Discount Given</span>
+            </div>
+            <div class="bg-[#43b968] text-white p-6 rounded-lg shadow">
+              <p class="text-2xl font-bold">₦</p>
+              <span>Total Revenue</span>
+            </div>
+          </div>
+
+          <!-- Totals (icons + details) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-4 gap-4">
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#f44236] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Total Invoice</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#43b968] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Sales</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#3e70c9] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-box text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Sold Product Types</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#f59345] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-coins text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Total Receivable</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+          </div>
+           <div class="grid grid-cols-1 sm:grid-cols-2 mt-2 lg:grid-cols-4 gap-4">
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#f44236] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Total Invoice</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#43b968] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Sales</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#3e70c9] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-box text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Sold Product Types</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+            <div class="flex items-center bg-white p-4 border rounded-lg shadow-sm">
+              <div class="bg-[#f59345] text-white p-3 rounded-full mr-4">
+                <i class="fa-solid fa-coins text-xl"></i>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-sm">Total Receivable</span>
+                <span class="text-xl font-semibold text-gray-900">₦0</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <%- include ('partials/footer') %>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 
 const express = require("express");
 const app = express();
@@ -14,7 +14,7 @@ const mongodb = require("mongodb");
 
 
 mongoose
-  .connect(process.env.DB)
+  .connect("mongodb://0.0.0.0/sales")
   .then((done) => {
     let port = process.env.PORT || 3001;
     if(port == null || port == ""){

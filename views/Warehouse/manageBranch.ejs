@@ -49,13 +49,12 @@
                         <td class="p-3 border border-gray-200"><%= index + 1 %></td>
                         <td class="p-3 border border-gray-200"><%= branch.branch_name %></td>
                         <td class="p-3 flex space-x-2 border border-gray-200">
-                          <button
-                            onclick="viewBranch('Apapa')"
+                          <a href="/viewBranch/<%= branch._id %>"
+                           
                             class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs hover:bg-blue-200">
                             👁 View
-                          </button>
+                        </a>
                           <button
-                            onclick="editBranch('Apapa')"
                             class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs hover:bg-yellow-200">
                             ✏ Edit
                           </button>
@@ -216,10 +215,6 @@
       function goBack() {
         document.getElementById("branchDetailView").classList.add("hidden");
         document.getElementById("branchTableView").classList.remove("hidden");
-      }
-
-      function editBranch(name) {
-        alert(`Edit branch: ${name}`);
       }
 
       function deleteBranch(button) {

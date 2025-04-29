@@ -34,7 +34,7 @@
                 <tr class="bg-slate-100 text-gray-700 font-medium border-b">
                   <th class="p-3 border border-gray-200">No</th>
                   <th class="p-3 border border-gray-200">Products</th>
-                  <th class="p-3 border border-gray-200">Model</th>
+                  <th class="p-3 border border-gray-200">Unit Code</th>
                   <th class="p-3 border border-gray-200">Quantity</th>
                   <th class="p-3 border border-gray-200">Low Stock Alert</th>
                   <th class="p-3 border border-gray-200">Suppliers Price</th>
@@ -55,27 +55,48 @@
                     <tr class="border-b hover:bg-gray-50">
                       <td class="p-3 border border-gray-200"><%= index + 1 %></td>
                       <td class="p-3 border border-gray-200"><%= product.product %></td>
-                      <td class="p-3 border border-gray-200"><%= product.model %></td>
-                      <td class="p-3 border border-gray-200"><%= product.quantity %></td>
-                      <td class="p-3 border border-gray-200"><%= product.lowStockAlert %></td>
-                      <td class="p-3 border border-gray-200"><%= product.supplierPrice %></td>
-                      <td class="p-3 border border-gray-200"><%= product.sellPrice %></td>
+                      <td class="p-3 border border-gray-200">
+                        <% product.variants.forEach((variant, variantIndex) => { %>
+                          <%= variant.unitCode %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
+                        <% }) %>
+                      </td>
+                      <td class="p-3 border border-gray-200">
+                        <% product.variants.forEach((variant, variantIndex) => { %>
+                          <%= variant.quantity %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
+                        <% }) %>
+                      </td>
+                      <td class="p-3 border border-gray-200">
+                        <% product.variants.forEach((variant, variantIndex) => { %>
+                          <%= variant.lowStockAlert %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
+                        <% }) %>
+                      </td>
+                      <td class="p-3 border border-gray-200">
+                        <% product.variants.forEach((variant, variantIndex) => { %>
+                          <%= variant.supplierPrice %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
+                        <% }) %>
+                      </td>
+                      <td class="p-3 border border-gray-200">
+                        <% product.variants.forEach((variant, variantIndex) => { %>
+                          <%= variant.sellPrice %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
+                        <% }) %>
+                      </td>
                       <td class="p-3 border border-gray-200">
                         <img
                           src="/media/uploads/<%= product.product_image %>"
-                          
                           alt="Product Image"
                           class="w-6 h-6 object-cover rounded-md" style="height: 30px;"
                         />
                       </td>
                       <td class="p-3 border border-gray-200">
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md">Edit</button>
-                        <a href="/deleteProduct/<%=product._id%>" class="bg-red-500 text-white px-4 py-2 rounded-md">Delete</a>
+                        <a href="/adjustStock/<%=product._id%>" class="bg-blue-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a href="/deleteProduct/<%=product._id%>" class="bg-red-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-trash"></i></a>
                       </td>
                     </tr>
                   <% }) %>
                 <% } %>
               </tbody>
+              
+              
             </table>
             
             </div>

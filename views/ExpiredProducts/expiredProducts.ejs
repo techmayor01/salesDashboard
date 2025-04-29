@@ -34,8 +34,7 @@
                     class="font-semibold text-gray-700 border border-gray-200">
                     <th class="p-3 border border-gray-200">No</th>
                     <th class="p-3 border border-gray-200">Products</th>
-                    <th class="p-3 border border-gray-200">Model</th>
-                    <th class="p-3 border border-gray-200">SKU</th>
+                    <th class="p-3 border border-gray-200">Unit Code</th>
                     <th class="p-3 border border-gray-200">Mfg.Date</th>
                     <th class="p-3 border border-gray-200">Exp.Date</th>
                     <th class="p-3 border border-gray-200">Quantity</th>
@@ -44,37 +43,44 @@
                   </tr>
                 </thead>
                 <tbody>
-                    <% if (expiredProducts.length > 0) { %>
-                      <% expiredProducts.forEach((product, index) => { %>
-                        <tr class="border-t hover:bg-gray-50">
-                          <td class="p-3 border border-gray-200"><%= index + 1 %></td>
-                          <td class="p-3 border border-gray-200"><%= product.product %></td>
-                          <td class="p-3 border border-gray-200"><%= product.model %></td>
-                          <td class="p-3 border border-gray-200"><%= product.sku %></td>
-                          <td class="p-3 border border-gray-200"><%= product.mfgDate.toDateString() %></td>
-                          <td class="p-3 border border-gray-200 text-red-600 font-medium"><%= product.expDate.toDateString() %></td>
-                          <td class="p-3 border border-gray-200"><%= product.quantity %></td>
-                          <td class="p-3 border border-gray-200">
-                            <% if (product.product_image) { %>
-                              <img src="/media/uploads/<%= product.product_image %>" alt="Image" class="w-6 h-6 rounded object-cover" style="height: 30px;" />
-                            <% } else { %>
-                              <span class="text-gray-400">No Image</span>
-                            <% } %>
-                          </td>
-                          <td class="p-3 border border-gray-200">
-                            <button class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
-                              🗑 Remove
-                            </button>
-                          </td>
-                        </tr>
-                      <% }) %>
-                    <% } else { %>
-                      <tr>
-                        <td colspan="9" class="text-center py-4 text-gray-500">No expired products found</td>
+                  <% if (expiredProducts.length > 0) { %>
+                    <% expiredProducts.forEach((product, index) => { %>
+                      <tr class="border-t hover:bg-gray-50">
+                        <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                        <td class="p-3 border border-gray-200"><%= product.product %></td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.unitCode %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200"><%= product.mfgDate.toDateString() %></td>
+                        <td class="p-3 border border-gray-200 text-red-600 font-medium"><%= product.expDate.toDateString() %></td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.quantity %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <% if (product.product_image) { %>
+                            <img src="/media/uploads/<%= product.product_image %>" alt="Image" class="w-6 h-6 rounded object-cover" style="height: 30px;" />
+                          <% } else { %>
+                            <span class="text-gray-400">No Image</span>
+                          <% } %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <button class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">
+                            🗑 Remove
+                          </button>
+                        </td>
                       </tr>
-                    <% } %>
-                  
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="9" class="text-center py-4 text-gray-500">No expired products found</td>
+                    </tr>
+                  <% } %>
                 </tbody>
+                
               </table>
             </div>
           </div>

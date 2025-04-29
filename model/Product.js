@@ -1,10 +1,17 @@
 const mongoose = require("mongoose");
 
+const variantSchema = new mongoose.Schema({
+  quantity: Number,
+  unitCode: String,
+  lowStockAlert: Number,
+  supplierPrice: Number,
+  sellPrice: Number,
+  supplier: { type: mongoose.Schema.Types.ObjectId, ref: "Supplier" }
+}, { _id: false });
+
+
 const productSchema = new mongoose.Schema({
-  product: {
-    type: String,
-    required: true
-  },
+  product: String,
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
@@ -15,51 +22,15 @@ const productSchema = new mongoose.Schema({
     ref: "Branch",
     required: true
   },
-  product_image: {
-    type: String // Store image file path or filename
-  },
-  product_detail: {
-    type: String,
-    maxlength: 300
-  },
-  mfgDate: {
-    type: Date,
-    required: true
-  },
-  expDate: {
-    type: Date,
-    required: true
-  },
-
-  // Inventory & Supplier Info
-  quantity: {
-    type: Number
-  },
-  unitCode: {
-    type: String,
-    enum: ["cs", "dz"]
-  },
-  lowStockAlert: {
-    type: Number
-  },
-  supplierPrice: {
-    type: Number
-  },
-  sellPrice: {
-    type: Number
-  },
-  model: {
-    type: String
-  },
-  sku: {
-    type: String
-  },
-  supplier: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Supplier"
-  }
-}, {
-  timestamps: true
+  product_detail: String,
+  mfgDate: Date,
+  expDate: Date,
+  product_image: String,
+  variants: [variantSchema],
+  transferredStock: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TransferStock"
+    }],
 });
 
 module.exports = mongoose.model("Product", productSchema);

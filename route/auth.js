@@ -1,5 +1,5 @@
-
 const express = require("express");
+
 const router = express.Router();
 
 
@@ -62,6 +62,7 @@ const Branch = require("../model/Branch");
 const Product = require("../model/Product");
 const SupplierInvoice = require('../model/supplierInvoice');
 const Customer = require('../model/Customer'); 
+const StockTransfer = require('../model/transferStock');
 
 router.get("/login", (req,res)=>{
     res.render("Auth/login")
@@ -76,13 +77,56 @@ router.get("/register", (req,res)=>{
 router.get("/manageSuppliers", (req, res) => {
     Supplier.find()
       .then(suppliers => {
-        res.render("Suppliers/manageSuppliers", { suppliers }); // Replace with your actual view file
+        res.render("Suppliers/manageSuppliers", { suppliers });
       })
       .catch(err => {
         console.error("Error fetching suppliers:", err);
         res.status(500).send("Failed to retrieve suppliers");
       });
-  });
+});
+
+router.get("/editSuppliers/:id", (req, res) => {
+      Supplier.findById(req.params.id)
+      .then(supplier =>{
+          res.render("Suppliers/editSupplier", { supplier });
+      })
+      .catch(err => console.log(err))
+});
+
+router.get("/viewSupplier/:id", (req, res) => {
+  Supplier.findById(req.params.id)
+    .populate({
+      path: 'supplierInvoice',
+      populate: {
+        path: 'branch' // populate branch inside supplierInvoice
+      }
+    })
+    .then(supplier => {
+      console.log(supplier);
+      res.render("Suppliers/viewSupplier", { supplier });
+    })
+    .catch(err => console.log(err));
+});
+
+
+router.post("/updateSupplier", (req, res) => {
+  const updateData = {
+    supplier: req.body.supplier,
+    contact_person: req.body.contact_person,
+    email: req.body.email,
+    phone: req.body.phone
+  };
+
+  Supplier.findByIdAndUpdate(req.body.id, { $set: updateData }, { new: true })
+    .then(updatedDocument => {
+      console.log("Updated Document:", updatedDocument);
+      res.redirect("/manageSuppliers");
+    })
+    .catch(err => {
+      console.error("Error updating document:", err);
+    });
+});
+
   
 router.post("/addSupplier", (req, res) => {
     const { supplier, contact_person, email, phone, address } = req.body;
@@ -167,7 +211,7 @@ router.get("/deleteCategory/:id", (req,res)=>{
 // ADD BRANCH LOGIC 
 router.get("/addBranch", (req, res) => {
     res.render("Warehouse/addBranch", {});
-  });
+});
 
 router.post("/addBranch", (req, res) => {
     const { branch_name, branch_number } = req.body;
@@ -189,15 +233,49 @@ router.post("/addBranch", (req, res) => {
 });
 
 router.get("/manageBranch", (req, res) => {
-    Branch.find()
-    .then(branch => {
-      res.render("Warehouse/manageBranch", { branch }); 
+  Branch.find()
+    .populate({
+      path: 'stock',
+      populate: {
+        path: 'category'
+      }
+    })
+    .then(branches => {
+      // Loop through each branch
+      branches.forEach(branch => {
+        console.log(`\nBranch: ${branch.branch_name}`);
+
+        if (Array.isArray(branch.stock) && branch.stock.length > 0) {
+          branch.stock.forEach((product, index) => {
+            console.log(`  Product ${index + 1}:`);
+            console.log(`    Name: ${product.product}`);
+            console.log(`    Detail: ${product.product_detail}`);
+            console.log(`    MFG Date: ${product.mfgDate}`);
+            console.log(`    EXP Date: ${product.expDate}`);
+            console.log(`    Image: ${product.product_image}`);
+            console.log(`    Category: ${product.category?.category_name || 'N/A'}`);
+
+            if (Array.isArray(product.variants)) {
+              product.variants.forEach((variant, i) => {
+                console.log(`      Variant ${i + 1}: Qty=${variant.quantity}, Price=${variant.sellPrice}, Unit=${variant.unitCode}`);
+              });
+            } else {
+              console.log(`      No variants`);
+            }
+          });
+        } else {
+          console.log("  No stock in this branch.");
+        }
+      });
+
+      res.render("Warehouse/manageBranch", { branch: branches });
     })
     .catch(err => {
-      console.error("Error fetching suppliers:", err);
-      res.status(500).send("Failed to retrieve suppliers");
+      console.error("Error fetching branches:", err);
+      res.status(500).send("Failed to retrieve branches");
     });
 });
+
 
 router.get("/deleteBranch/:id", (req,res)=>{
     Branch.findByIdAndDelete(req.params.id)
@@ -210,6 +288,26 @@ router.get("/deleteBranch/:id", (req,res)=>{
     console.log(req.params);
     
 })
+
+router.get("/viewBranch/:id", (req,res)=>{
+
+  Branch.findById(req.params.id)
+  .populate({
+    path: 'stock',
+    populate: {
+      path: 'category' // populate branch inside supplierInvoice
+    }
+  })
+  .then(stock => {
+    console.log(stock);
+    res.render("Warehouse/viewBranch", { stock });
+  })
+  .catch(err => console.log(err));
+  console.log(req.params);
+})
+
+
+
 
 
 // ADD INVOICE LOGIC 
@@ -246,14 +344,12 @@ router.post('/addinvoiceSuppliers', (req, res) => {
     paid_amount
   } = req.body;
 
-  // Generate timestamps
   const now = new Date();
-  const timestamp = now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14); // e.g. 20250421123045
+  const timestamp = now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
 
   const receipt_ref = `RCT-${timestamp}`;
   const invoice_number = `INV-${timestamp}`;
 
-  // Convert items into array of item objects
   const items = item_name.map((name, index) => {
     const qty = parseFloat(item_qty[index]);
     const rate = parseFloat(item_rate[index]);
@@ -270,7 +366,6 @@ router.post('/addinvoiceSuppliers', (req, res) => {
   const due_amount = grand_total - paid;
   const payment_status = due_amount === 0 ? 'paid_full' : 'paid_half';
 
-  // Create invoice instance
   const newInvoice = new SupplierInvoice({
     supplier,
     branch,
@@ -285,11 +380,20 @@ router.post('/addinvoiceSuppliers', (req, res) => {
   });
 
   newInvoice.save()
-    .then(() => {
-      res.redirect('/SuppliersInvoice'); // Redirect or render success
+    .then((savedInvoice) => {
+      // Now update the Supplier with this invoice ID
+      return Supplier.findByIdAndUpdate(
+        supplier,
+        { supplierInvoice: savedInvoice._id },
+        { new: true }
+      );
+    })
+    .then((updatedSupplier) => {
+      console.log('Supplier updated with invoice ID:', updatedSupplier);
+      res.redirect('/SuppliersInvoice');
     })
     .catch((err) => {
-      console.error('Error saving supplier invoice:', err);
+      console.error('Error saving supplier invoice or updating supplier:', err);
       res.status(500).send('Internal Server Error');
     });
 });
@@ -364,7 +468,6 @@ router.post("/addProduct", upload.single("product_image"), (req, res) => {
     product,
     category,
     branch,
-    branchRackNo,
     product_detail,
     mfgDate,
     expDate,
@@ -373,60 +476,160 @@ router.post("/addProduct", upload.single("product_image"), (req, res) => {
     lowStockAlert,
     supplierPrice,
     sellPrice,
-    model,
-    sku,
     supplier
   } = req.body;
 
+  // Normalize variant-related fields
+  const quantities = Array.isArray(quantity) ? quantity : [quantity];
+  const unitCodes = Array.isArray(unitCode) ? unitCode : [unitCode];
+  const lowStockAlerts = Array.isArray(lowStockAlert) ? lowStockAlert : [lowStockAlert];
+  const supplierPrices = Array.isArray(supplierPrice) ? supplierPrice : [supplierPrice];
+  const sellPrices = Array.isArray(sellPrice) ? sellPrice : [sellPrice];
+  const suppliers = Array.isArray(supplier) ? supplier : [supplier];
+
+  // Create variant objects
+  const variants = quantities.map((_, index) => ({
+    quantity: quantities[index],
+    unitCode: unitCodes[index],
+    lowStockAlert: lowStockAlerts[index],
+    supplierPrice: supplierPrices[index],
+    sellPrice: sellPrices[index],
+    supplier: suppliers[index]
+  }));
+
+  // Create the new product document
   const newProduct = new Product({
     product,
     category,
     branch,
-    branchRackNo,
     product_detail,
     mfgDate,
     expDate,
-    quantity,
-    unitCode,
-    lowStockAlert,
-    supplierPrice,
-    sellPrice,
-    model,
-    sku,
-    supplier,
-    product_image: req.file ? req.file.filename : null
+    product_image: req.file ? req.file.filename : null,
+    variants
   });
 
   newProduct.save()
-    .then(() => {
-      res.redirect("/addProduct"); // Or wherever you want to go
+    .then((savedProduct) => {
+      // Push product to branch stock array
+      return Branch.findByIdAndUpdate(
+        branch,
+        { $push: { stock: savedProduct._id } }, // 👈 push instead of replace
+        { new: true }
+      );
     })
-    .catch(err => {
-      console.error(err);
-      res.status(500).send("Something went wrong.");
+    .then((updatedBranch) => {
+      console.log('Branch updated with new product:', updatedBranch);
+      res.redirect('/addProduct');
+    })
+    .catch((err) => {
+      console.error('Error saving product or updating branch:', err);
+      res.status(500).send('Internal Server Error');
     });
 });
+
 
 
 router.get("/addProductCsv", (req, res) => {
     res.render("Product/addProductCsv", {});
 });
-  
+
 router.get("/manageProduct", (req, res) => {
-    Product.find()
-      .populate('category')
-      .populate('branch')   
-      .populate('supplier') 
-      .then(products => {
-        console.log(products);
-        
-        res.render("Product/manageProduct", { products });
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).send("Error fetching products.");
+  Product.find()
+    .populate('category')
+    .populate('branch')
+    .populate('variants.supplier') 
+    .then(products => {
+      products.forEach(product => {
+        product.variants.forEach(variant => {
+          console.log(variant);
+        });
       });
+      res.render("Product/manageProduct", { products });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).send("Error fetching products.");
+    });
 });
+
+router.get("/stockTransfer", (req, res) => {
+  Product.find()
+    .populate('variants.supplier') // If needed
+    .then(products => {
+      Branch.find()
+        .then(branches => {
+          res.render("Product/stockTransfer", { products, branches });
+        })
+        .catch(branchErr => {
+          console.error(branchErr);
+          res.status(500).send("Error fetching branches.");
+        });
+    })
+    .catch(productErr => {
+      console.error(productErr);
+      res.status(500).send("Error fetching products.");
+    });
+});
+
+
+
+router.get("/adjustStock/:id", (req,res)=>{
+  console.log(req.params);
+  Product.findById(req.params.id)
+  .populate('category')
+  .populate('branch')
+  .populate('variants.supplier') 
+  .then(product => {
+    res.render("Product/stockAdjust", { product });
+  })
+  .catch(err => {
+    console.error(err);
+    res.status(500).send("Error fetching products.");
+  });
+})
+
+
+router.post('/adjustStock', (req, res) => {
+  const { productId, supplierPrice, sellPrice } = req.body;
+
+  if (!productId) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  Product.findById(productId)
+    .then(product => {
+      if (!product) {
+        return res.status(404).send('Product not found');
+      }
+
+      // Make sure supplierPrice and sellPrice are arrays
+      const supplierPrices = Array.isArray(supplierPrice) ? supplierPrice : [supplierPrice];
+      const sellPrices = Array.isArray(sellPrice) ? sellPrice : [sellPrice];
+
+      if (product.variants.length !== supplierPrices.length || product.variants.length !== sellPrices.length) {
+        return res.status(400).send('Mismatch in variants and prices count');
+      }
+
+      // Loop through each variant and update
+      product.variants.forEach((variant, index) => {
+        variant.supplierPrice = supplierPrices[index];
+        variant.sellPrice = sellPrices[index];
+      });
+
+      return product.save();
+    })
+    .then(updatedProduct => {
+      console.log('Product updated successfully:', updatedProduct._id);
+      res.redirect('/manageProduct');
+    })
+    .catch(error => {
+      console.error('Error updating product:', error);
+      res.status(500).send('Internal Server Error');
+    });
+});
+
+
 
 router.get("/deleteProduct/:id", (req,res)=>{
     Product.findByIdAndDelete(req.params.id)
@@ -439,6 +642,65 @@ router.get("/deleteProduct/:id", (req,res)=>{
     console.log(req.params);
     
 })
+
+
+
+router.get('/searchProduct', async (req, res) => {
+  const { query, branchId } = req.query;
+
+  if (!query || !branchId) {
+      return res.status(400).json({ error: 'Missing query or branchId' });
+  }
+
+  try {
+      // Find the branch and populate its stock (assuming stock is an array or ref)
+      const branch = await Branch.findById(branchId).populate({
+          path: 'stock',
+          match: { product: new RegExp(query, 'i') }
+      });
+
+      if (!branch || !branch.stock) {
+          return res.json({ product: null });
+      }
+
+      // If stock is an array, find the first matching product
+      const matchedProduct = Array.isArray(branch.stock)
+          ? branch.stock.find(p => p.product.toLowerCase().includes(query.toLowerCase()))
+          : branch.stock;
+
+      res.json({ product: matchedProduct });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+// router.post('/stockTransfer', (req, res) => {
+//     console.log(req.body);
+    
+    
+// });
+
+
+// POST request to handle stock transfer
+router.post('/stockTransfer', (req, res) => {
+  console.log(req.body);
+  
+});
+
+
+
+
+
+
+
+
+
+
 
 
 // EXPIRED PRODUCT LOGIC 
@@ -467,6 +729,20 @@ router.get("/addCustomers", (req, res) => {
 router.get("/manageCustomers", (req, res) => {
   Customer.find()
     .then((customers) => {
+      customers.forEach(customer => {
+        console.log(`Customer: ${customer.customer_name}`);
+        
+        customer.transactions.forEach(transaction => {
+          console.log(`  - Product: ${transaction.product}`);
+          console.log(`  - Quantity: ${transaction.qty}`);
+          console.log(`  - Rate: ${transaction.rate}`);
+          console.log(`  - Total: ${transaction.total}`);
+          console.log(`  - Paid Amount: ${transaction.paid_amount}`);
+          console.log(`  - Remaining Amount: ${transaction.remaining_amount}`);
+          console.log('----------------------------');
+        });
+      });
+
       res.render("Customers/manageCustomers", { customers });
     })
     .catch((err) => {
@@ -474,6 +750,7 @@ router.get("/manageCustomers", (req, res) => {
       res.status(500).send("Internal Server Error");
     });
 });
+
 
 router.get("/delete/customer/:id", (req,res)=>{
   Customer.findByIdAndDelete(req.params.id)
@@ -521,11 +798,39 @@ router.post("/addCustomers", (req, res) => {
 
 
 router.get("/creditCustomers", (req, res) => {
-  res.render("Customers/creditCustomers", {});
+  Customer.find()
+    .then(customers => {
+      // Filter customers who have at least one transaction with remaining_amount > 0
+      const creditCustomers = customers.filter(customer => 
+        customer.transactions.some(transaction => transaction.remaining_amount > 0)
+      );
+
+      res.render("Customers/creditCustomers", { customers: creditCustomers });
+    })
+    .catch(err => {
+      console.error("Error fetching customers:", err);
+      res.status(500).send("Internal Server Error");
+    });
 });
+
+
 router.get("/paidCustomers", (req, res) => {
-  res.render("Customers/paidCustomers", {});
+  Customer.find()
+    .then(customers => {
+      // Filter customers who have NO transaction with remaining_amount > 0
+      const paidCustomers = customers.filter(customer => 
+        customer.transactions.length > 0 &&
+        customer.transactions.every(transaction => transaction.remaining_amount <= 0)
+      );
+
+      res.render("Customers/paidCustomers", { customers: paidCustomers });
+    })
+    .catch(err => {
+      console.error("Error fetching customers:", err);
+      res.status(500).send("Internal Server Error");
+    });
 });
+
 
 
 // TRANSACTION LOGIC 
@@ -534,6 +839,8 @@ router.get("/paidCustomers", (req, res) => {
 router.get("/cashReceivable", (req, res) => {
   Customer.find()
     .then((customers) => {
+      console.log(customers);
+      
       res.render("Transaction/cashReceivable", { customers });
     })
     .catch((err) => {
@@ -553,26 +860,44 @@ router.get("/transactionHistory", (req, res) => {
   });
   });
 
-router.get('/api/searchCustomers', (req, res) => {
-  const query = req.query.q;
-
-  if (!query) return res.json([]);
-
-  const regex = new RegExp(query, 'i'); // case-insensitive match
-
-  Customer.find({
-    $or: [
-      { customer_name: regex },
-      { mobile: regex },
-      { email: regex }
-    ]
-  })
-    .then(customers => res.json(customers))
-    .catch(err => {
-      console.error('Error searching customers:', err);
-      res.status(500).json({ error: 'Internal server error' });
-    });
-});
+  router.get('/api/searchCustomers', (req, res) => {
+    const searchQuery = req.query.q;
+  
+    Customer.find({
+      customer_name: { $regex: searchQuery, $options: 'i' }
+    })
+      .then(customers => {
+        const updatedCustomers = customers.map(customer => {
+          let total_amount = 0;
+          let paid_amount = 0;
+          let remaining_amount = 0;
+  
+          customer.transactions.forEach(txn => {
+            total_amount += txn.total || 0;
+            paid_amount += txn.paid_amount || 0;
+            remaining_amount += txn.remaining_amount || 0;
+          });
+  
+          return {
+            _id: customer._id,
+            customer_name: customer.customer_name,
+            mobile: customer.mobile,
+            email: customer.email,
+            address: customer.address,
+            total_amount,
+            paid_amount,
+            remaining_amount
+          };
+        });
+  
+        res.json(updatedCustomers);
+      })
+      .catch(err => {
+        console.error('Error searching customers:', err);
+        res.status(500).send('Internal Server Error');
+      });
+  });
+  
 
 
 
@@ -615,33 +940,124 @@ router.get("/search-customers", (req, res) => {
     });
 });
 
-router.get("/api/searchProducts", async (req, res) => {
+
+
+// router.post("/addInvoice", (req, res) => {
+//   console.log(req.body);
+// });
+
+
+
+// POST route to add a transaction
+router.post('/addInvoice', (req, res) => {
+  const { customer_id, product, qty, unitcode, rate, total, paid_amount } = req.body;
+
+  if (!customer_id) {
+    return res.status(400).json({ message: 'Customer ID is required' });
+  }
+
+  Customer.findById(customer_id)
+    .then(customer => {
+      if (!customer) {
+        return res.status(404).json({ message: 'Customer not found' });
+      }
+
+      // Find product by NAME, not ID
+      return Product.findOne({ product: product })
+        .then(productDoc => {
+          if (!productDoc) {
+            return res.status(404).json({ message: 'Product not found' });
+          }
+
+          // Find the variant inside the product
+          const variant = productDoc.variants.find(v => v.unitCode === unitcode);
+          if (!variant) {
+            return res.status(404).json({ message: 'Product variant not found' });
+          }
+
+          if (variant.quantity < qty) {
+            return res.status(400).json({ message: 'Not enough stock available' });
+          }
+
+          // Subtract purchased quantity
+          variant.quantity -= qty;
+
+          // Save updated product
+          return productDoc.save()
+            .then(() => {
+              // After product saved, add transaction to customer
+
+              const remaining_amount = parseFloat(total) - parseFloat(paid_amount || 0);
+
+              const newTransaction = {
+                product: product,
+                qty: Number(qty),
+                unit_code: unitcode,
+                rate: Number(rate),
+                total: Number(total),
+                paid_amount: Number(paid_amount || 0),
+                remaining_amount: remaining_amount
+              };
+
+              customer.transactions.push(newTransaction);
+
+              return customer.save();
+            });
+        });
+    })
+    .then(updatedCustomer => {
+      if (!updatedCustomer) return;
+      res.status(200).json({ message: 'Transaction added successfully', customer: updatedCustomer });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+    });
+});
+
+
+
+
+
+
+
+router.get('/search-products', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.json([]);
 
   try {
-    const regex = new RegExp(query, "i");
     const products = await Product.find({
-      $or: [
-        { product_name: regex },
-        { product_code: regex },
-        { category: regex }
-      ]
-    }).limit(10);
+      product: { $regex: query, $options: "i" }
+    }).limit(10); // Limit results
 
-    res.json(products);
-  } catch (err) {
-    console.error("Product search error:", err);
-    res.status(500).json({ error: "Server error" });
+    // Add available_qty field to the response by summing quantities of variants
+    const productsWithAvailableQty = products.map(product => {
+      const available_qty = product.variants.reduce((sum, variant) => sum + variant.quantity, 0);
+      return { ...product.toObject(), available_qty };
+    });
+
+    res.json(productsWithAvailableQty);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post("/addInvoice", (req, res) => {
-  console.log(req.body);
-});
 
 
-
+// RECIEVED SUPPLY LOGIC
+router.get("/suppliedStock", (req, res)=>{
+  SupplierInvoice.find()
+  .populate('supplier branch')
+  .then((invoices) => {
+      console.log(invoices);
+      res.render("ReceivedStock/suppliedStock", {invoices});
+  })
+  .catch((err) => {
+    console.error('Error fetching supplier invoices:', err);
+    // res.status(500).send('Internal Server Error');
+  });
+})
 
 // USER SIGN-UP LOGIC 
 router.post("/register", (req, res) => {

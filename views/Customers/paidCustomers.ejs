@@ -26,37 +26,56 @@
             <!-- Table -->
             <div class="overflow-x-auto">
               <table
-                id="suppliersTable"
-                class="stripe hover w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr
-                    class="font-semibold text-gray-700 border border-gray-200">
-                    <th class="p-3 border border-gray-200">No</th>
-                    <th class="p-3 border border-gray-200">Customers</th>
-                    <th class="p-3 border border-gray-200">Mobile</th>
-                    <th class="p-3 border border-gray-200">Email</th>
-                    <th class="p-3 border border-gray-200">Total Amount</th>
-                    <th class="p-3 border border-gray-200">Paid Amount</th>
-                    <th class="p-3 border border-gray-200">Remaining Amount</th>
+              id="suppliersTable"
+              class="stripe hover w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="font-semibold text-gray-700 border border-gray-200">
+                  <th class="p-3 border border-gray-200">No</th>
+                  <th class="p-3 border border-gray-200">Customers</th>
+                  <th class="p-3 border border-gray-200">Mobile</th>
+                  <th class="p-3 border border-gray-200">Email</th>
+                  <th class="p-3 border border-gray-200">Total Amount</th>
+                  <th class="p-3 border border-gray-200">Paid Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (customers.length > 0) { %>
+                  <% customers.forEach((customer, index) => { 
+                       const totalAmount = customer.transactions.reduce((sum, t) => sum + t.total, 0);
+                       const paidAmount = customer.transactions.reduce((sum, t) => sum + t.paid_amount, 0);
+                  %>
+                    <tr class="border-t">
+                      <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                      <td class="p-3 border border-gray-200"><%= customer.customer_name %></td>
+                      <td class="p-3 border border-gray-200"><%= customer.mobile %></td>
+                      <td class="p-3 border border-gray-200"><%= customer.email %></td>
+                      <td class="p-3 border border-gray-200"><%= totalAmount.toFixed(2) %></td>
+                      <td class="p-3 border border-gray-200"><%= paidAmount.toFixed(2) %></td>
                     
-                    <th class="p-3 border border-gray-200">Option</th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
                   <tr class="border-t">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                  
-                
-                  <td class="col-span-6 text-center"> No data available in table</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td colspan="7" class="text-center p-3">No fully paid customers found.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+              <tfoot>
+                <% if (customers.length > 0) { %>
+                  <tr class="font-semibold">
+                    <td colspan="4" class="p-3 text-right border border-gray-200">Total:</td>
+                    <td class="p-3 border border-gray-200">
+                      <%= customers.reduce((sum, customer) => sum + customer.transactions.reduce((s, t) => s + t.total, 0), 0).toFixed(2) %>
+                    </td>
+                    <td class="p-3 border border-gray-200">
+                      <%= customers.reduce((sum, customer) => sum + customer.transactions.reduce((s, t) => s + t.paid_amount, 0), 0).toFixed(2) %>
+                    </td>
                     <td></td>
                   </tr>
-                </tbody>
-              </table>
+                <% } %>
+              </tfoot>
+            </table>
+            
             </div>
           </div>
         </main>

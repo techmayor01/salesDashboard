@@ -59,7 +59,7 @@ id="sidebar"
    <li class="">
         <button onclick="toggleDropdown(this)" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
           <div class="flex items-center space-x-3  text-gray-700">
-            <i class="fa-solid fa-cart-shopping text-blue-600"></i>
+            <i class="fa-solid fa-receipt text-blue-600"></i>
             <span>Suppliers Invoice</span>
           </div>
           <i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
@@ -73,22 +73,23 @@ id="sidebar"
       <li class="">
         <button onclick="toggleDropdown(this)" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
           <div class="flex items-center space-x-3  text-gray-700">
-            <i class="fa-solid fa-cart-shopping text-blue-600"></i>
-            <span>Product</span>
+            <i class="fa-solid fa-cart-flatbed-suitcase text-blue-600"></i>
+            <span>Stock</span>
           </div>
           <i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
         </button>
         <ul class="hidden pl-8 py-1 space-y-1 text-sm text-gray-600">
-          <li><a href="/addProduct" class="block py-1 hover:text-blue-600">Add Product</a></li>
+          <li><a href="/addProduct" class="block py-1 hover:text-blue-600">Add Stock</a></li>
           <li><a href="/addProductCsv" class="block py-1 hover:text-blue-600">Add Product CSV</a></li>
-          <li><a href="/manageProduct" class="block py-1 hover:text-blue-600">Manage Product</a></li>
+          <li><a href="/manageProduct" class="block py-1 hover:text-blue-600">Manage Stock</a></li>
+          <li><a href="/stockTransfer" class="block py-1 hover:text-blue-600">Stock Transfer</a></li>
         </ul>
       </li>
     <!--Expired Product -->
       <li class=" ">
         <button onclick="toggleDropdown(this)" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
           <div class="flex items-center space-x-3  text-gray-700">
-            <i class="fa-solid fa-cart-shopping text-blue-600"></i>
+            <i class="fa-solid fa-calendar-xmark text-blue-600"></i>
             <span>Expired Product</span>
           </div>
           <i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
@@ -102,7 +103,7 @@ id="sidebar"
       <li class="">
         <button onclick="toggleDropdown(this)" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
           <div class="flex items-center space-x-3  text-gray-700">
-            <i class="fa-solid fa-cart-shopping text-blue-600"></i>
+            <i class="fa-solid fa-trash-arrow-up text-blue-600"></i>
             <span>Dead Stock Product</span>
           </div>
           <i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
@@ -117,13 +118,13 @@ id="sidebar"
       <li class="">
         <button onclick="toggleDropdown(this)" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
           <div class="flex items-center space-x-3  text-gray-700">
-            <i class="fa-solid fa-cart-shopping text-blue-600"></i>
+            <i class="fa-solid fa-cart-arrow-down text-blue-600"></i>
             <span>Recieved Stock</span>
           </div>
           <i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
         </button>
         <ul class="hidden pl-8 py-1 space-y-1 text-sm text-gray-600">
-          <li><a href="/DeadStockProducts/deadStockProducts" class="block py-1 hover:text-blue-600">Dead Stock Product</a></li>
+          <li><a href="/suppliedStock" class="block py-1 hover:text-blue-600">Supplied Stock</a></li>
      
         </ul>
       </li>

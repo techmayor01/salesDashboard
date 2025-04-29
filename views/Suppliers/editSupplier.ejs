@@ -31,7 +31,8 @@
 
               <!-- Table -->
               <div class="">
-                <div class=" w-full overflow-x-auto lg:overflow-x-visible ">
+                  <div class=" w-full overflow-x-auto lg:overflow-x-visible ">
+                    <form action="/updateSupplier" method="post">
                   <table
                   id="suppliersTable"
                   class="min-w-full px-1 text-sm text-left bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -51,30 +52,26 @@
                     </tr>
                   </thead>
                   <tbody class="text-gray-700 divide-y divide-gray-100">
-                    <% suppliers.forEach(supplier => { %>
-                      <tr class="hover:bg-gray-50 even:bg-gray-50 transition">
-                        <td class="px-4 py-3"><%= supplier.supplier %></td>
-                        <td class="px-4 py-3"><%= supplier.contact_person %></td>
-                        <td class="px-4 py-3"><%= supplier.email %></td>
-                        <td class="px-4 py-3"><%= supplier.phone %></td>
-                        <td class="px-4 py-3">
-                          <div class="flex space-x-2">
-                            <a href="/viewSupplier/<%=supplier._id%>" class="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs hover:bg-green-200">
-                              👁 View
-                            </a>
-                            <a href="/editSuppliers/<%=supplier._id%>" class="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs hover:bg-yellow-200">
-                              ✏ Edit
-                            </a>
-                            <a href="/delete/<%=supplier._id%>" class="flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs hover:bg-red-200">
-                              🗑 Delete
-                            </a>
-                          </div>
-                        </td>
-                      </tr>
-                    <% }) %>
-                    
-                  </tbody>
+                        <tr class="hover:bg-gray-50 even:bg-gray-50 transition">
+                          
+                          <td class="px-4 py-3"><input type="text" name="supplier" id="" value="<%= supplier.supplier %>"></td>
+                          <td class="px-4 py-3"><input type="text" name="contact_person" id="" value="<%= supplier.contact_person %>"></td>
+                          <td class="px-4 py-3"><input type="text" name="email" id="" value="<%= supplier.email %>"></td>
+                          <td class="px-4 py-3"><input type="text" name="phone" id="" value="<%= supplier.phone %>"></td>
+                          <input type="text" name="id" id="" value="<%= supplier.id %>" hidden>
+                          <td class="px-4 py-3">
+                            <div class="flex space-x-2">
+                              <button class="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs hover:bg-green-200">
+                               Update
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        
+                        
+                    </tbody>
                 </table>
+                    </form>
               </div>
             </div>
           </div>

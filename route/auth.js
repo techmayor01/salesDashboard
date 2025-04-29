@@ -63,6 +63,7 @@ const Product = require("../model/Product");
 const SupplierInvoice = require('../model/supplierInvoice');
 const Customer = require('../model/Customer'); 
 const StockTransfer = require('../model/transferStock');
+const Loan = require('../model/Loan');
 
 router.get("/login", (req,res)=>{
     res.render("Auth/login")
@@ -860,43 +861,43 @@ router.get("/transactionHistory", (req, res) => {
   });
   });
 
-  router.get('/api/searchCustomers', (req, res) => {
-    const searchQuery = req.query.q;
-  
-    Customer.find({
-      customer_name: { $regex: searchQuery, $options: 'i' }
-    })
-      .then(customers => {
-        const updatedCustomers = customers.map(customer => {
-          let total_amount = 0;
-          let paid_amount = 0;
-          let remaining_amount = 0;
-  
-          customer.transactions.forEach(txn => {
-            total_amount += txn.total || 0;
-            paid_amount += txn.paid_amount || 0;
-            remaining_amount += txn.remaining_amount || 0;
-          });
-  
-          return {
-            _id: customer._id,
-            customer_name: customer.customer_name,
-            mobile: customer.mobile,
-            email: customer.email,
-            address: customer.address,
-            total_amount,
-            paid_amount,
-            remaining_amount
-          };
+router.get('/api/searchCustomers', (req, res) => {
+  const searchQuery = req.query.q;
+
+  Customer.find({
+    customer_name: { $regex: searchQuery, $options: 'i' }
+  })
+    .then(customers => {
+      const updatedCustomers = customers.map(customer => {
+        let total_amount = 0;
+        let paid_amount = 0;
+        let remaining_amount = 0;
+
+        customer.transactions.forEach(txn => {
+          total_amount += txn.total || 0;
+          paid_amount += txn.paid_amount || 0;
+          remaining_amount += txn.remaining_amount || 0;
         });
-  
-        res.json(updatedCustomers);
-      })
-      .catch(err => {
-        console.error('Error searching customers:', err);
-        res.status(500).send('Internal Server Error');
+
+        return {
+          _id: customer._id,
+          customer_name: customer.customer_name,
+          mobile: customer.mobile,
+          email: customer.email,
+          address: customer.address,
+          total_amount,
+          paid_amount,
+          remaining_amount
+        };
       });
-  });
+
+      res.json(updatedCustomers);
+    })
+    .catch(err => {
+      console.error('Error searching customers:', err);
+      res.status(500).send('Internal Server Error');
+    });
+});
   
 
 
@@ -1058,6 +1059,194 @@ router.get("/suppliedStock", (req, res)=>{
     // res.status(500).send('Internal Server Error');
   });
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// LOAN LOGIC 
+router.get("/addLoaner", (req, res) => {
+  res.render("loan/addLoaner");
+});
+
+router.get("/manageLoaner", (req, res) => {
+  Loan.find()
+  .then(loaners => {
+    res.render("loan/manageLoaner", { loaners });
+  })
+  .catch(err => {
+    console.error("Error fetching loaners:", err);
+    res.status(500).send("Server error");
+  });
+});
+// VIEW AND DELETE LOANER 
+router.get("/viewLoaner/:id", (req,res)=>{
+  Loan.findById(req.params.id)
+  .then(loaner =>{
+      res.redirect("/manageLoaner")
+      console.log('Loaner successfully found');
+      
+  })
+  .catch(err => console.log(err))
+  console.log(req.params);
+  
+})
+router.get("/deleteLoaner/:id", (req,res)=>{
+  Loan.findByIdAndDelete(req.params.id)
+  .then(loaner =>{
+      res.redirect("/manageLoaner")
+      console.log('Loaner successfully deleted');
+      
+  })
+  .catch(err => console.log(err))
+  console.log(req.params);
+  
+})
+
+
+
+
+// ADD LOAN 
+router.get("/addLoan", (req, res) => {
+  Loan.find({}, 'loaner _id')
+    .then(loaners => {
+      res.render("loan/addLoan", { loaners });
+    })
+    .catch(err => {
+      console.error("Error loading loaners:", err);
+      res.status(500).send("Server error");
+    });
+});
+
+
+router.get("/manageLoan", (req, res) => {
+  Loan.find()
+    .then(loaners => {
+      const loans = [];
+
+      loaners.forEach(loaner => {
+        loaner.loans.forEach(loan => {
+          loans.push({
+            loanerName: loaner.loaner,
+            mobile: loaner.mobile,
+            loanAmount: loan.loanAmount,
+            amount_to_repay: loan.amount_to_repay || 0, // if you track this
+            contractStart: loan.loanContractDate,
+            _id: loan._id,
+            status: loan.loanContractEndDate < new Date() ? "Expired" : "Active"
+          });
+        });
+      });
+
+      res.render("loan/manageLoan", { loans });
+    })
+    .catch(err => {
+      console.error("Error loading loans:", err);
+      res.status(500).send("Server error");
+    });
+});
+
+router.post("/deleteLoan/:id", (req, res) => {
+  const loanId = req.params.id;
+
+  Loan.findOneAndUpdate(
+    { "loans._id": loanId },
+    { $pull: { loans: { _id: loanId } } }
+  )
+    .then(() => {
+      console.log("Loan successfully deleted");
+      res.redirect("/manageLoan");
+    })
+    .catch(err => {
+      console.error("Error deleting loan:", err);
+      res.status(500).send("Error deleting loan");
+    });
+});
+
+
+// LOAN POST 
+router.post("/addLoaner", (req, res) => {
+  const { loaner, mobile, address } = req.body;
+
+  const newLoaner = new Loan({
+    loaner,
+    mobile,
+    address,
+    loans: []
+  });
+
+  newLoaner.save()
+    .then(savedLoaner => {
+      console.log(savedLoaner);
+      
+      res.redirect("/manageLoaner")
+    })
+    .catch(err => {
+      console.error("Error adding loaner:", err);
+      res.status(500).json({ message: "Server error" });
+    });
+});
+
+router.post("/addLoan", (req, res) => {
+  const { loanerId, loanAmount, loanContractDate, loanContractEndDate, details } = req.body;
+
+  Loan.findById(loanerId)
+    .then(loaner => {
+      if (!loaner) return res.status(404).send("Loaner not found");
+
+      loaner.loans.push({
+        loanAmount,
+        amount_to_repay: loanAmount,
+        loanContractDate,
+        loanContractEndDate,
+        details
+      });
+
+      return loaner.save();
+    })
+    .then(() => {
+      res.redirect("/manageLoan");
+    })
+    .catch(err => {
+      console.error("Error adding loan:", err);
+      res.status(500).send("Server error");
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+// STAFF LOGIC 
+router.get("/addStaffs", (req, res) => {
+  res.render("staffs/addStaffs", {});
+});
+
 
 // USER SIGN-UP LOGIC 
 router.post("/register", (req, res) => {

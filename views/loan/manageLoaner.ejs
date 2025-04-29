@@ -41,17 +41,28 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="border-t">
-                    <td></td>
-                    <td></td>
-                    
-                
-                  <td class=" text-center"> No data available in table</td>
-                    <td></td>
-                    <td></td>
-                    
-                  </tr>
+                  <% if (loaners.length > 0) { %>
+                    <% loaners.forEach((loaner, index) => { %>
+                      <tr class="border-t">
+                        <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                        <td class="p-3 border border-gray-200"><%= loaner.loaner %></td>
+                        <td class="p-3 border border-gray-200"><%= loaner.mobile %></td>
+                        <td class="p-3 border border-gray-200"><%= loaner.address %></td>
+                        <td class="p-3 border border-gray-200">
+                          <div class="flex space-x-2">
+                            <a href="/viewLoaner/<%=loaner._id%>" class="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs hover:bg-green-200"><i class="fa-solid fa-eye"></i></a>
+                            <a href="/deleteLoaner/<%=loaner._id%>" class="flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs hover:bg-red-200"><i class="fa-solid fa-trash"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr class="border-t text-center">
+                      <td colspan="5" class="p-3 border border-gray-200">No data available in table</td>
+                    </tr>
+                  <% } %>
                 </tbody>
+                
               </table>
             </div>
           </div>

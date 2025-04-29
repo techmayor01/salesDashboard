@@ -45,20 +45,33 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="border-t">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    
-                
-                  <td class=" text-center"> No data available in table</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    
-                  </tr>
-                </tbody>
+                  <% if (loans.length === 0) { %>
+                    <tr class="border-t">
+                      <td colspan="8" class="text-center py-4 text-gray-500">No data available in table</td>
+                    </tr>
+                  <% } else { %>
+                    <% loans.forEach((loan, index) => { %>
+                      <tr class="border-t hover:bg-gray-50">
+                        <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                        <td class="p-3 border border-gray-200"><%= loan.loanerName %></td>
+                        <td class="p-3 border border-gray-200"><%= loan.mobile %></td>
+                        <td class="p-3 border border-gray-200"><%= loan.contractStart.toISOString().split('T')[0] %></td>
+                        <td class="p-3 border border-gray-200">₦<%= loan.loanAmount %></td>
+                        <td class="p-3 border border-gray-200">₦<%= loan.amount_to_repay %></td>
+                        <td class="p-3 border border-gray-200">
+                          <form action="/deleteLoan/<%= loan._id %>" method="POST" onsubmit="return confirm('Are you sure?')">
+                            <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs">Delete</button>
+                          </form>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <span class="<%= loan.status === 'Active' ? 'text-green-600' : 'text-red-600' %> font-semibold">
+                            <%= loan.status %>
+                          </span>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } %>
+                </tbody>                
               </table>
             </div>
           </div>

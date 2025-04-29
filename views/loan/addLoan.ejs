@@ -21,40 +21,100 @@
                 <p class="text-xs text-gray-400 py-2">use this form to add loan to database..</p>
             </div>
             <!-- Loan Name -->
-            <div class="grid grid-cols-3 items-center">
+            <div class="relative grid grid-cols-3 items-center">
                 <label class="text-gray-700 text-sm">Name <span class="text-red-500">*</span></label>
-                <select type="text" name="loan" class="col-span-2 border-b border-gray-400  py-2 w-full"><option value="">Select</option> </select>
+                <input type="text" id="loanerInput" name="loaner" autocomplete="off"
+                    class="col-span-2 border-b border-gray-400 py-2 w-full" placeholder="Loaner">
+                <input type="hidden" name="loanerId" id="loanerId">
+                <ul id="loanerSuggestions" class="absolute z-10 bg-white border border-gray-300 w-full hidden max-h-40 overflow-y-auto">
+                <% loaners.forEach(l => { %>
+                    <li class="px-3 py-2 hover:bg-gray-100 cursor-pointer" data-id="<%= l._id %>"><%= l.loaner %></li>
+                <% }) %>
+                </ul>
             </div>
+  
+  
 
              <!-- Loan Amount -->
             <div class="grid grid-cols-3 items-center">
-                <label class="text-gray-700 text-sm">Loan Contract Date <span class="text-red-500">*</span></label>
-                <input type="number" name="Amount" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="Loan Amount">
+                <label class="text-gray-700 text-sm">Loan Amount <span class="text-red-500">*</span></label>
+                <input type="number" name="loanAmount" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="Loan Amount">
             </div>
 
             <!-- Contract Date -->
             <div class="grid grid-cols-3 items-center">
                 <label class="text-gray-700 text-sm">Loan Contract Date <span class="text-red-500">*</span></label>
-                <input type="date" name="contractDate" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="">
+                <input type="date" name="loanContractDate" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="">
             </div>
 
             <!-- Loan Due Date -->
             <div class="grid grid-cols-3 items-center">
                 <label class="text-gray-700 text-sm">Loan Contract End Date <span class="text-red-500">*</span></label>
-                <input type="date" name="dueDate" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="">
+                <input type="date" name="loanContractEndDate" class="col-span-2 border-b border-gray-400  py-2 w-full" placeholder="">
             </div>
 
 
             <!-- Deatails -->
             <div class="grid grid-cols-3 items-start">
-                <label class="text-gray-700 text-sm">Address</label>
-                <textarea name="Details" class="col-span-2 border-b border-gray-400 py-2 w-full" rows="3" placeholder="Details/Terms and conditions"></textarea>
+                <label class="text-gray-700 text-sm">Details</label>
+                <textarea name="details" class="col-span-2 border-b border-gray-400 py-2 w-full" rows="3" placeholder="Details/Terms and conditions"></textarea>
             </div>
 
             <!-- Submit Button -->
             <div class="flex justify-center items-center ">
                 <button class="bg-[#3e70c9]  text-white px-3 py-1 text-sm hover:bg-blue-700">Add Loan</button>
             </div>
+            <script>
+                const input = document.getElementById('loanerInput');
+                const suggestions = document.getElementById('loanerSuggestions');
+                const hiddenInput = document.getElementById('loanerId');
+                const items = suggestions.querySelectorAll('li');
+              
+                input.addEventListener('input', () => {
+                  const query = input.value.trim().toLowerCase();
+                  let matchFound = false;
+              
+                  items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (query && text.includes(query)) {
+                      item.style.display = 'block';
+                      matchFound = true;
+                    } else {
+                      item.style.display = 'none';
+                    }
+                  });
+              
+                  suggestions.style.display = matchFound ? 'block' : 'none';
+                });
+              
+                suggestions.addEventListener('click', e => {
+                  if (e.target.tagName === 'LI') {
+                    input.value = e.target.textContent;
+                    hiddenInput.value = e.target.dataset.id;
+                    suggestions.style.display = 'none';
+                  }
+                });
+              
+                document.addEventListener('click', e => {
+                  if (!suggestions.contains(e.target) && e.target !== input) {
+                    suggestions.style.display = 'none';
+                  }
+                });
+              
+                input.addEventListener('blur', () => {
+                  setTimeout(() => {
+                    const matchedItem = Array.from(items).find(item => item.textContent === input.value);
+                    if (matchedItem) {
+                      hiddenInput.value = matchedItem.dataset.id;
+                    } else {
+                      input.value = '';
+                      hiddenInput.value = '';
+                    }
+                  }, 100);
+                });
+              </script>
+              
+              
         </form>
         </main>
     </div>

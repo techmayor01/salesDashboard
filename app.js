@@ -28,23 +28,6 @@ mongoose
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.get("/", (req, res) => {
   res.render("index");
 });
@@ -52,12 +35,6 @@ app.get("/", (req, res) => {
 app.get("/Suppliers/addSupplier", (req, res) => {
   res.render("Suppliers/addSupplier", {});
 });
-
-// app.get("/Suppliers/manageSuppliers", (req, res) => {
-//   res.render("Suppliers/manageSuppliers", {});
-// });
-
-
 
 
 
@@ -103,22 +80,10 @@ app.get("/Suppliers/addSupplier", (req, res) => {
             app.get("/Expenses/unpaidExpenses", (req, res) => {
               res.render("Expenses/unpaidExpenses", {});
             });
-            app.get("/loan/addLoaner", (req, res) => {
-              res.render("loan/addLoaner", {});
-            });
-            app.get("/loan/manageLoaner", (req, res) => {
-              res.render("loan/manageLoaner", {});
-            });
-            app.get("/loan/addLoan", (req, res) => {
-              res.render("loan/addLoan", {});
-            });
-            app.get("/loan/manageLoan", (req, res) => {
-              res.render("loan/manageLoan", {});
-            });
 
-             app.get("/staffs/addStaffs", (req, res) => {
-               res.render("staffs/addStaffs", {});
-             });
+
+
+    
 
                 app.get("/staffs/manageStaffs", (req, res) => {
                     res.render("staffs/manageStaffs", {});
@@ -143,21 +108,6 @@ app.get("/Suppliers/addSupplier", (req, res) => {
                            res.render("Settings/SignOut", {});
                          });
 
-// app.post("/addSupplier", (req, res) => {
-//   console.log(req.body);
-// });
-// app.post("/addCategories", (req, res) => {
-//   console.log(req.body);
-// });
-
-// app.post("/addWarehouse", (req, res) => {
-//   console.log(req.body);
-// });
-
-
-// app.post("/addProduct", (req, res) => {
-//   console.log(req.body);
-// });
 app.post("/addProductCsv", (req, res) => {
   console.log(req.body);
 });
@@ -168,12 +118,7 @@ app.post("/addExpenses", (req, res) => {
 app.post("/addExpensesInvoice", (req, res) => {
   console.log(req.body);
 });
-app.post("/addLoaner", (req, res) => {
-  console.log(req.body);
-});
-app.post("/addLoan", (req, res) => {
-  console.log(req.body);
-});
+
 app.post("/addStaffs", (req, res) => {
   console.log(req.body);
 });

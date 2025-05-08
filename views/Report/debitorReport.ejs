@@ -2,39 +2,41 @@
 <html lang="en">
   <%- include ('../partials/head') %>
   <body>
-    <div class="relative flex flex-col min-h-screen bg-slate-200">
+    <div class="relative flex flex-col min-h-screen bg-white">
       <%- include ('../partials/header') %>
-
+    
       <div class="flex flex-row">
-        <div class="w-[220px] p-4 h-[100vh]">
+        <!-- Sidebar -->
+        <div class="w-[220px] p-4 h-[100vh] bg-white shadow-md">
           <%- include ('../partials/sidebar') %>
         </div>
-
-        <main class="cal relative top-16 p-4 overflow-auto" style="width: calc(100% - 220px)">
+    
+        <!-- Main Content -->
+        <main class="relative top-16 p-6 overflow-auto" style="width: calc(100% - 220px)">
           <div class="flex flex-row justify-between items-center mb-6">
-            <h1 class="text-2xl font-semibold">Debitor Report</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Debitor Report</h1>
           </div>
-
+    
           <!-- Filters Section -->
-          <div id="creditorsFilterBlock" class="mb-6 flex flex-wrap items-center gap-4 text-sm">
-            <input type="text" id="debitorInput" placeholder="Enter Debitor  Name" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-
+          <div id="creditorsFilterBlock" class="mb-6 flex flex-wrap items-center gap-4 text-sm bg-white p-4 rounded-lg shadow-md">
+            <input type="text" id="debitorInput" placeholder="Enter Debitor Name" class="input-field" />
+    
             <p class="font-semibold text-gray-700">Date Range</p>
-            <input type="date" id="startDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-
+            <input type="date" id="startDate" class="input-field" />
+    
             <span class="text-gray-500">to</span>
-            <input type="date" id="endDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-
-            <button id="getCreditorsBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <input type="date" id="endDate" class="input-field" />
+    
+            <button id="getDebitorsBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
               Get
             </button>
           </div>
-
-          <!-- Creditors Table -->
-          <div id="creditorsTableSection" class="hidden max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    
+          <!-- Debitors Table Section -->
+          <div id="debitorTableSection" class="hidden max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Debitor Ledger</h2>
             <div class="overflow-x-auto">
-              <table id="creditorsTable" class="min-w-full divide-y divide-gray-200 text-sm">
+              <table id="debitorTable" class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-blue-50 text-blue-700">
                   <tr>
                     <th class="px-4 py-3 text-left font-semibold">Date</th>
@@ -58,20 +60,28 @@
               </table>
             </div>
           </div>
-
+    
         </main>
       </div>
     </div>
-
+    
+    <!-- Styling Shortcuts -->
+    <style>
+      .input-field {
+        @apply border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500;
+      }
+    </style>
+    
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const getBtn = document.getElementById("getCreditorsBtn");
-        const tableSection = document.getElementById("creditorsTableSection");
-
+        const getBtn = document.getElementById("getDebitorsBtn");
+        const tableSection = document.getElementById("debitorTableSection");
+    
         getBtn.addEventListener("click", () => {
           tableSection.classList.remove("hidden");
         });
       });
     </script>
+    
   </body>
 </html>

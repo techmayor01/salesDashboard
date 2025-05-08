@@ -34,6 +34,7 @@
                     <th class="p-3 border border-gray-200">No</th>
                     <th class="p-3 border border-gray-200">Invoice no</th>
                     <th class="p-3 border border-gray-200">Customers</th>
+                    <th class="p-3 border border-gray-200">Product</th>
                     <th class="p-3 border border-gray-200">Date</th>
                     <th class="p-3 border border-gray-200">Total Amount</th>
                     
@@ -44,18 +45,27 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="border-t">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                
-                  <td class=" text-center"> No data available in table</td>
-                    <td></td>
-                    <td></td>
-                  
-                    <td></td>
-                  </tr>
+                  <% if (invoices.length > 0) { %>
+                    <% invoices.forEach((invoice, index) => { %>
+                        <tr class="border-t">
+                          <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.invoice_no %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.customer_name %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.product.product %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.createdAt?.toDateString() || 'N/A' %></td>
+                      
+                        <td  class="p-3 border border-gray-200"><%= invoice.total %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.paid_amount %></td>
+                          <td class="p-3 border border-gray-200"><%= invoice.remaining_amount %></td>
+                        
+                          <td class="p-3 border border-gray-200">
+                            <a href="/deleteProduct/<%= invoice._id %>" class="bg-red-500 text-white px-2 py-1 rounded-md">
+                              <i class="fa-solid fa-trash"></i>
+                            </a>
+                          </td>
+                        </tr>
+                      <% }) %>
+                  <% } %>
                 </tbody>
               </table>
             </div>

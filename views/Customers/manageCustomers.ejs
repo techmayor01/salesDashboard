@@ -47,8 +47,8 @@
                       <td class="p-3 border border-gray-200"><%= customer.address %></td>
                       <td class="p-3 border border-gray-200 flex space-x-2">
                         <button class="bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600">👁 View</button>
-                        <button class="bg-gray-300 text-gray-700 px-3 py-1 text-sm hover:bg-gray-400">✏ Edit</button>
-                        <a href="/delete/customer/<%=customer._id%>" class="bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600">🗑 Delete</a>
+                        <a class="bg-blue-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a href="/delete/customer/<%=customer._id%>" class="bg-red-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-trash"></i></a>
                       </td>
                     </tr>
                   <% }) %>

@@ -26,29 +26,43 @@
             <!-- Table -->
             <div class="overflow-x-auto">
               <table
-                id="suppliersTable"
-                class="stripe hover w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr
-                    class="font-semibold text-gray-700 border border-gray-200">
-                    <th class="p-3 border border-gray-200">No</th>
-                    <th class="p-3 border border-gray-200">Expense Type</th>
-                    
-                    <th class="p-3 border border-gray-200">Option</th>
-                    
-                  </tr>
-                </thead>
-                <tbody>
+              id="suppliersTable"
+              class="stripe hover w-full text-left text-sm border-collapse"
+            >
+              <thead>
+                <tr class="font-semibold text-gray-700 border border-gray-200">
+                  <th class="p-3 border border-gray-200">No</th>
+                  <th class="p-3 border border-gray-200">Expense Type</th>
+                  <th class="p-3 border border-gray-200">Option</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (expenses.length > 0) { %>
+                  <% expenses.forEach((expense, index) => { %>
+                    <tr class="border-t border-gray-200">
+                      <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                      <td class="p-3 border border-gray-200"><%= expense.title %></td>
+                      <td class="p-3 border border-gray-200">
+                        <!-- Example Option: Delete/Edit Buttons -->
+                        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                          Delete
+                        </button>
+                        <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 ml-2">
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
                   <tr class="border-t">
-                    <td></td>
-                    
-                
-                  <td class=" text-center"> No data available in table</td>
-                    <td></td>
-                    
+                    <td class="p-3 border border-gray-200"></td>
+                    <td class="p-3 border border-gray-200 text-center">No data available in table</td>
+                    <td class="p-3 border border-gray-200"></td>
                   </tr>
-                </tbody>
-              </table>
+                <% } %>
+              </tbody>
+            </table>
+            
             </div>
           </div>
         </main>

@@ -35,23 +35,13 @@ const transferStockSchema = new mongoose.Schema({
       ref: "Product", // Reference to Product schema
       required: true
     },
-    unitCode: {
-      type: String,
-      required: true
-    },
+    product: String,
+    unitCode: String,
+    quantity: Number,
     supplierPrice: Number,
     sellPrice: Number,
-    quantity: {
-      type: Number,
-      required: true
-    },
-    product: String,
-    mfgDate: Date,
-    expDate: Date,
+    worth: Number
   }],
-
-
-
   createdAt: { 
     type: Date, 
     default: Date.now 

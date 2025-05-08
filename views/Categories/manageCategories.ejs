@@ -37,7 +37,10 @@
                       <th class="p-3">No</th>
                       <th class="p-3 border border-gray-200">Categories</th>
 
-                      <th class="p-3">Option</th>
+                      
+                      <% if (user.role === 'owner' || user.role === 'admin') { %>
+                        <th class="p-3">Option</th>
+                      <% } %>
                     </tr>
                   </thead>
                   <tbody class="text-gray-700 divide-y divide-gray-100">
@@ -45,6 +48,7 @@
                       <tr class="hover:bg-gray-50 even:bg-gray-50 transition">
                         <td class="p-3 border border-gray-200"><%= index + 1 %></td>
                         <td class="p-3 border border-gray-200"><%= category.category_name %></td>
+                        <% if (user.role === 'owner' || user.role === 'admin') { %>
                         <td class="p-3 flex space-x-2 border border-gray-200">
                           <button class="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs hover:bg-yellow-200">
                             ✏ Edit
@@ -53,6 +57,7 @@
                             🗑 Delete
                           </a>
                         </td>
+                        <% } %>
                       </tr>
                     <% }) %>                    
                   </tbody>

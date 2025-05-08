@@ -2,232 +2,133 @@
 <html lang="en">
   <%- include ('../partials/head') %>
   <body>
-    <div class="relative flex flex-col min-h-screen bg-slate-200">
-      <%- include ('../partials/header') %>
-
-      <div class="flex flex-row">
-        <div class="w-[220px] p-4 h-[100vh]"><%- include ('../partials/sidebar') %></div>
-
-        <main class="cal relative top-16 p-4 overflow-auto" style="width: calc(100% - 220px)">
-          <div class="flex flex-row justify-between items-center mb-6">
-            <h1 class="text-2xl font-semibold">Purchase Report</h1>
+    <div class="relative min-h-screen bg-white">
+      <%- include('../partials/header') %>
+    
+      <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-white shadow-md min-h-screen p-4">
+          <%- include('../partials/sidebar') %>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 p-6 space-y-6 overflow-auto bg-white">
+          
+          <!-- Page Title -->
+          <div class="flex flex-row justify-between items-center mt-16">
+            <h1 class="text-3xl font-bold text-gray-900">Purchase Report</h1>
           </div>
-
+    
           <!-- Toggle Buttons -->
-          <div class="ledger-toggle-group flex flex-wrap gap-4 mb-6">
-            <button class="ledger-toggle px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300" data-ledger="summary">Summary Purchase Ledger</button>
-            <button class="ledger-toggle px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300" data-ledger="detailed">Detailed Purchase Ledger</button>
-            <button class="ledger-toggle px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300" data-ledger="stock">Stock Purchase Ledger</button>
-            <button class="ledger-toggle px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300" data-ledger="customer">Customer Purchase Ledger</button>
+          <div class="flex flex-wrap gap-3">
+            <% const toggles = ['summary', 'detailed', 'stock', 'supplier']; %>
+            <% toggles.forEach(type => { %>
+              <button class="ledger-toggle bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition" data-ledger="<%= type %>">
+                <%= type.charAt(0).toUpperCase() + type.slice(1) %> Purchase Ledger
+              </button>
+            <% }) %>
           </div>
-
-          <!-- Filters Section -->
-          <div id="dateRangeBlock" class="mb-6 hidden flex flex-wrap items-center gap-4 text-sm">
-            <p class="font-semibold text-gray-700">Date Range</p>
-            <input type="date" id="startDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-            <span class="text-gray-500">to</span>
-            <input type="date" id="endDate" class="border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-
-            <!-- Stock Selector -->
-            <select id="stockSelect" class="hidden border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+    
+          <!-- Filters -->
+          <div id="dateRangeBlock" class="hidden flex flex-wrap gap-4 items-center text-sm bg-white p-4 rounded shadow">
+            <span class="font-semibold text-gray-600">Date Range:</span>
+            <input type="date" id="startDate" class="input-field" />
+            <span>to</span>
+            <input type="date" id="endDate" class="input-field" />
+            
+            <select id="stockSelect" class="input-field hidden">
               <option value="">Select Stock</option>
               <option value="Indomie">Indomie</option>
               <option value="Sugar">Sugar</option>
               <option value="Rice">Rice</option>
             </select>
-
-            <!-- Customer Input -->
-            <input type="text" id="customerInput" placeholder="Enter Customer Name" class="hidden border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-
-            <button id="getLedgerBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">Get</button>
+            
+            <input type="text" id="supplierInput" class="input-field hidden" placeholder="Enter Supplier Name" />
+            
+            <button id="getLedgerBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700 transition">Get</button>
           </div>
-
-          <!-- Summary Ledger -->
-          <div id="summaryLedger" class="ledger-section hidden"> <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
-              <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Summary Purchase Ledger</h2>
+    
+          <!-- Ledger Sections -->
+          <% const ledgers = ['summary', 'detailed', 'stock', 'supplier']; %>
+          <% ledgers.forEach(ledger => { %>
+            <section id="<%= ledger %>Ledger" class="ledger-section hidden bg-white p-6 rounded-lg shadow-md">
+              <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><%= ledger.charAt(0).toUpperCase() + ledger.slice(1) %> Purchase Ledger</h2>
               <div class="overflow-x-auto">
-                <table id="summaryTable" class="min-w-full divide-y divide-gray-200 text-sm">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                   <thead class="bg-blue-50 text-blue-700">
                     <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Date</th>
+                      <th class="px-4 py-3 text-left font-semibold">Purchase Date</th>
                       <th class="px-4 py-3 text-left font-semibold">Product</th>
                       <th class="px-4 py-3 text-left font-semibold">Unit</th>
                       <th class="px-4 py-3 text-left font-semibold">Unit Price</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Qty</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Amount</th>
-                      <th class="px-4 py-3 text-left font-semibold">Customer</th>
-                      <th class="px-4 py-3 text-left font-semibold">Receipt No</th>
+                      <th class="px-4 py-3 text-left font-semibold">Purchase Qty</th>
+                      <th class="px-4 py-3 text-left font-semibold">Purchase Amount</th>
+                      <th class="px-4 py-3 text-left font-semibold">Supplier</th>
+                      <th class="px-4 py-3 text-left font-semibold">Invoice No</th>
                       <th class="px-4 py-3 text-left font-semibold">Operator</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="px-4 py-3">10th may 2024</td>
-                      <td class="px-4 py-3">Indomie</td>
-                      <td class="px-4 py-3">TYO</td>
-                      <td class="px-4 py-3">15, 000</td>
-                      <td class="px-4 py-3">10</td>
-                      <td class="px-4 py-3">₦150, 000</td>
-                      <td class="px-4 py-3">Toyin Ambrose</td>
-                      <td class="px-4 py-3">092783</td>
-                      <td class="px-4 py-3">Edison</td>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-2">5th May 2024</td>
+                      <td class="px-4 py-2">Rice</td>
+                      <td class="px-4 py-2">Bag</td>
+                      <td class="px-4 py-2">28,000</td>
+                      <td class="px-4 py-2">20</td>
+                      <td class="px-4 py-2">₦560,000</td>
+                      <td class="px-4 py-2">Emeka Supplies</td>
+                      <td class="px-4 py-2">INV239847</td>
+                      <td class="px-4 py-2">Chuka</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div></div>
-
-          <!-- Detailed Ledger -->
-          <div id="detailedLedger" class="ledger-section hidden"> <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
-              <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Detailed Purchase Ledger</h2>
-              <div class="overflow-x-auto">
-                <table id="summaryTable" class="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead class="bg-blue-50 text-blue-700">
-                    <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Date</th>
-                      <th class="px-4 py-3 text-left font-semibold">Product</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit Price</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Qty</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Amount</th>
-                      <th class="px-4 py-3 text-left font-semibold">Customer</th>
-                      <th class="px-4 py-3 text-left font-semibold">Receipt No</th>
-                      <th class="px-4 py-3 text-left font-semibold">Operator</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="px-4 py-3">10th may 2024</td>
-                      <td class="px-4 py-3">Indomie</td>
-                      <td class="px-4 py-3">TYO</td>
-                      <td class="px-4 py-3">15, 000</td>
-                      <td class="px-4 py-3">10</td>
-                      <td class="px-4 py-3">₦150, 000</td>
-                      <td class="px-4 py-3">Toyin Ambrose</td>
-                      <td class="px-4 py-3">092783</td>
-                      <td class="px-4 py-3">Edison</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div></div>
-
-          <!-- Stock Ledger -->
-          <div id="stockLedger" class="ledger-section hidden"> <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
-              <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Stock Purchase Ledger</h2>
-              <div class="overflow-x-auto">
-                <table id="summaryTable" class="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead class="bg-blue-50 text-blue-700">
-                    <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Date</th>
-                      <th class="px-4 py-3 text-left font-semibold">Product</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit Price</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Qty</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Amount</th>
-                      <th class="px-4 py-3 text-left font-semibold">Customer</th>
-                      <th class="px-4 py-3 text-left font-semibold">Receipt No</th>
-                      <th class="px-4 py-3 text-left font-semibold">Operator</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="px-4 py-3">10th may 2024</td>
-                      <td class="px-4 py-3">Indomie</td>
-                      <td class="px-4 py-3">TYO</td>
-                      <td class="px-4 py-3">15, 000</td>
-                      <td class="px-4 py-3">10</td>
-                      <td class="px-4 py-3">₦150, 000</td>
-                      <td class="px-4 py-3">Toyin Ambrose</td>
-                      <td class="px-4 py-3">092783</td>
-                      <td class="px-4 py-3">Edison</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div></div>
-
-          <!-- Customer Ledger -->
-          <div id="customerLedger" class="ledger-section hidden"> <div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
-              <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Customer Purchase Ledger</h2>
-              <div class="overflow-x-auto">
-                <table id="summaryTable" class="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead class="bg-blue-50 text-blue-700">
-                    <tr>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Date</th>
-                      <th class="px-4 py-3 text-left font-semibold">Product</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit</th>
-                      <th class="px-4 py-3 text-left font-semibold">Unit Price</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Qty</th>
-                      <th class="px-4 py-3 text-left font-semibold">Sales Amount</th>
-                      <th class="px-4 py-3 text-left font-semibold">Customer</th>
-                      <th class="px-4 py-3 text-left font-semibold">Receipt No</th>
-                      <th class="px-4 py-3 text-left font-semibold">Operator</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="px-4 py-3">10th may 2024</td>
-                      <td class="px-4 py-3">Indomie</td>
-                      <td class="px-4 py-3">TYO</td>
-                      <td class="px-4 py-3">15, 000</td>
-                      <td class="px-4 py-3">10</td>
-                      <td class="px-4 py-3">₦150, 000</td>
-                      <td class="px-4 py-3">Toyin Ambrose</td>
-                      <td class="px-4 py-3">092783</td>
-                      <td class="px-4 py-3">Edison</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div></div>
-
+            </section>
+          <% }) %>
         </main>
       </div>
     </div>
-
+    
+    <!-- Styling Shortcuts -->
+    <style>
+      .input-field {
+        @apply border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500;
+      }
+    </style>
+    
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         let activeLedger = null;
-
-        const dateRangeBlock = document.querySelector("#dateRangeBlock");
-        const stockSelect = document.querySelector("#stockSelect");
-        const customerInput = document.querySelector("#customerInput");
-
-        dateRangeBlock.classList.add("hidden");
-
-        const toggleButtons = document.querySelectorAll(".ledger-toggle");
-
-        toggleButtons.forEach(button => {
+        const dateRangeBlock = document.getElementById("dateRangeBlock");
+        const stockSelect = document.getElementById("stockSelect");
+        const supplierInput = document.getElementById("supplierInput");
+    
+        document.querySelectorAll(".ledger-toggle").forEach(button => {
           button.addEventListener("click", () => {
             const selected = button.getAttribute("data-ledger");
             activeLedger = selected;
-
-            document.querySelectorAll(".ledger-section").forEach(section => {
-              section.classList.add("hidden");
-            });
-
-            // Reset and show/hide input fields
+    
+            // Hide all ledger sections
+            document.querySelectorAll(".ledger-section").forEach(sec => sec.classList.add("hidden"));
+    
+            // Reset filters
             stockSelect.classList.add("hidden");
-            customerInput.classList.add("hidden");
+            supplierInput.classList.add("hidden");
             if (selected === "stock") stockSelect.classList.remove("hidden");
-            if (selected === "customer") customerInput.classList.remove("hidden");
-
+            if (selected === "supplier") supplierInput.classList.remove("hidden");
+    
             dateRangeBlock.classList.remove("hidden");
           });
         });
-
-        document.querySelector("#getLedgerBtn").addEventListener("click", () => {
+    
+        document.getElementById("getLedgerBtn").addEventListener("click", () => {
           if (!activeLedger) return;
-
-          document.querySelectorAll(".ledger-section").forEach(section => {
-            section.classList.add("hidden");
-          });
-
-          const section = document.querySelector(`#${activeLedger}Ledger`);
-          if (section) section.classList.remove("hidden");
+          document.querySelectorAll(".ledger-section").forEach(sec => sec.classList.add("hidden"));
+          document.getElementById(`${activeLedger}Ledger`).classList.remove("hidden");
         });
       });
     </script>
+    
+    
   </body>
 </html>

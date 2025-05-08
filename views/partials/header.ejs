@@ -21,18 +21,25 @@
     <div class="flex items-center space-x-4">
       <!-- Language (Hidden on small screens) -->
       <div class="relative hidden lg:block">
-        <button id="languageBtn" class="text-gray-600 flex gap-2 items-center">
-          Languages <i class="fa-solid fa-caret-down"></i>
-        </button>
-        <div id="languageDropdown"
-          class="absolute right-0 mt-2 w-40 bg-white border shadow-lg opacity-0 invisible transition-opacity duration-300 z-50">
-          <ul class="p-2">
-            <li class="p-2 hover:bg-gray-200 cursor-pointer">English</li>
-            <li class="p-2 hover:bg-gray-200 cursor-pointer">French</li>
-            <li class="p-2 hover:bg-gray-200 cursor-pointer">Spanish</li>
-          </ul>
-        </div>
+        <select name="branch" id="branchSelect" class="border border-gray-300 rounded px-3 py-1 text-sm">
+          <option value="" disabled selected>Select Branch</option>
+      
+          <% if (user.role.toLowerCase() === 'owner' && branches.length > 0) { %>
+            <% branches.forEach(branch => { %>
+              <option value="<%= branch._id %>"><%= branch.branch_name %></option>
+            <% }); %>
+      
+          <% } else if (user.role.toLowerCase() === 'staff' && user.branch && user.branch.branch_name) { %>
+            <option value="<%= ownerBranch.branch._id %>" selected>
+              <%= user.branch.branch_name %>
+            </option>
+      
+          <% } else { %>
+            <option value="">No branches available</option>
+          <% } %>
+        </select>
       </div>
+      
 
       <!-- Profile -->
       <div class="relative">

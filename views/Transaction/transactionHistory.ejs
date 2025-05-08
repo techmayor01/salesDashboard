@@ -41,26 +41,25 @@
                 </tr>
               </thead>
               <tbody>
-                <% if (customers.length > 0) { %>
-                  <% customers.forEach((customer, index) => { %>
-                    <% customer.transactions.forEach((transaction, tIndex) => { %> <!-- Loop through each customer's transactions -->
+                <% if (customers.length > 0) { 
+                     let rowNumber = 1;
+                %>
+                  <% customers.forEach((customer) => { %>
+                    <% customer.transactions.forEach((transaction) => { %>
                       <tr class="border-t hover:bg-gray-50 even:bg-gray-50 transition">
-                        <td class="p-3 border border-gray-200"><%= index + 1 %>.<%= tIndex + 1 %></td> <!-- Displaying customer and transaction number -->
+                        <td class="p-3 border border-gray-200"><%= rowNumber++ %></td>
                         <td class="p-3 border border-gray-200"><%= customer.customer_name %></td>
                         <td class="p-3 border border-gray-200"><%= customer.mobile %></td>
                         <td class="p-3 border border-gray-200"><%= customer.email %></td>
-                        
-                        <!-- Check for valid date -->
                         <td class="p-3 border border-gray-200">
                           <%= new Date(customer.createdAt).toISOString().slice(0, 10) %>
                         </td>
-              
-                        <td class="p-3 border border-gray-200">₦ <%= transaction.total ?? 0 %></td> <!-- Total amount in the transaction -->
-                        <td class="p-3 border border-gray-200">₦ <%= transaction.paid_amount ?? 0 %></td> <!-- Paid amount -->
-                        <td class="p-3 border border-gray-200">₦ <%= transaction.remaining_amount ?? 0 %></td> <!-- Remaining balance -->
+                        <td class="p-3 border border-gray-200">₦ <%= transaction.total ?? 0 %></td>
+                        <td class="p-3 border border-gray-200">₦ <%= transaction.paid_amount ?? 0 %></td>
+                        <td class="p-3 border border-gray-200">₦ <%= transaction.remaining_amount ?? 0 %></td>
                       </tr>
-                    <% }) %> <!-- End of transaction loop -->
-                  <% }) %> <!-- End of customer loop -->
+                    <% }) %>
+                  <% }) %>
                 <% } else { %>
                   <tr>
                     <td colspan="8" class="text-center text-gray-500 py-4">
@@ -68,8 +67,7 @@
                     </td>
                   </tr>
                 <% } %>
-              </tbody>
-              
+              </tbody>           
             </table>
             
             </div>

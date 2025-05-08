@@ -36,12 +36,12 @@
                   <tr
                     class="hover:bg-gray-50 even:bg-gray-50 transition">
                     <th class="p-3 border border-gray-200">No</th>
-                    <th class="p-3 border border-gray-200">Invoice No</th>
                     <th class="p-3 border border-gray-200">Created by, Name</th>
+                    <th class="p-3 border border-gray-200">Branch</th>
                     <th class="p-3 border border-gray-200">Date</th>
-                    <th class="p-3 border border-gray-200">Total Amount</th>
-                    <th class="p-3 border border-gray-200">Paid Amount</th>
-                    <th class="p-3 border border-gray-200">Unpaid Amount</th>
+                    <th class="p-3 border border-gray-200">Invoice Type</th>
+                    <th class="p-3 border border-gray-200">Amount</th>
+                    <th class="p-3 border border-gray-200">Reason</th>
                     <th class="p-3 border border-gray-200">Option</th>
                   </tr>
                 </thead>
@@ -49,17 +49,13 @@
                   <% invoices.forEach((invoice, index) => { %>
                     <tr class="border-t hover:bg-gray-50 even:bg-gray-50 transition">
                       <td class="p-3 border border-gray-200"><%= index + 1 %></td>
-                      <td class="p-3 border border-gray-200"><%= invoice.invoice_number %></td>
                       <td class="p-3 border border-gray-200">Admin</td>
+                      <td class="p-3 border border-gray-200"><%= invoice.branch.branch_name %></td>
                       <td class="p-3 border border-gray-200"><%= new Date(invoice.payment_date).toISOString().slice(0, 10) %></td>
-                      <td class="p-3 border border-gray-200">₦ <%= invoice.grand_total %></td>
-                      <td class="p-3 border border-gray-200">₦ <%= invoice.paid_amount %></td>
-                      <td class="p-3 border border-gray-200">₦ <%= invoice.due_amount %></td>
+                      <td class="p-3 border border-gray-200"><%= invoice.invoice_type %></td>
+                      <td class="p-3 border border-gray-200"><%= invoice.amount %></td>
+                      <td class="p-3 border border-gray-200"><%= invoice.reason %></td>
                       <td class="p-3 border border-gray-200 flex space-x-2">
-                        <button
-                          class="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs hover:bg-green-200">
-                          👁 Print
-                        </button>
                         <button
                           class="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs hover:bg-yellow-200">
                           ✏ Edit

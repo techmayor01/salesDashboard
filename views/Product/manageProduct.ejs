@@ -5,7 +5,7 @@
   <%- include('../partials/head') %>
   <body class="bg-slate-100">
    <div class="relative flex flex-col min-h-screen bg-slate-200">
-      <%- include ('../partials/header') %>
+      <%- include ('../partials/dropdownLogic') %>
 
       <div class="flex flex-row">
         <div class="lg:w-[220px] lg:p-4">
@@ -26,78 +26,90 @@
 
             <!-- Table Wrapper -->
             <div class="w-full overflow-x-auto lg:overflow-x-visible">
-              <table
-              id="productsTable"
-              class="min-w-full px-1 text-sm text-left bg-white border border-gray-200 rounded-lg shadow-sm"
-            >
-              <thead>
-                <tr class="bg-slate-100 text-gray-700 font-medium border-b">
-                  <th class="p-3 border border-gray-200">No</th>
-                  <th class="p-3 border border-gray-200">Products</th>
-                  <th class="p-3 border border-gray-200">Unit Code</th>
-                  <th class="p-3 border border-gray-200">Quantity</th>
-                  <th class="p-3 border border-gray-200">Low Stock Alert</th>
-                  <th class="p-3 border border-gray-200">Suppliers Price</th>
-                  <th class="p-3 border border-gray-200">Sell Price</th>
-                  <th class="p-3 border border-gray-200">Image</th>
-                  <th class="p-3 border border-gray-200">Option</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% if (products.length === 0) { %>
-                  <tr class="border-b hover:bg-gray-50">
-                    <td colspan="9" class="text-center p-3">
-                      No data available in table
-                    </td>
-                  </tr>
-                <% } else { %>
-                  <% products.forEach((product, index) => { %>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="p-3 border border-gray-200"><%= index + 1 %></td>
-                      <td class="p-3 border border-gray-200"><%= product.product %></td>
-                      <td class="p-3 border border-gray-200">
-                        <% product.variants.forEach((variant, variantIndex) => { %>
-                          <%= variant.unitCode %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
-                        <% }) %>
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <% product.variants.forEach((variant, variantIndex) => { %>
-                          <%= variant.quantity %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
-                        <% }) %>
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <% product.variants.forEach((variant, variantIndex) => { %>
-                          <%= variant.lowStockAlert %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
-                        <% }) %>
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <% product.variants.forEach((variant, variantIndex) => { %>
-                          <%= variant.supplierPrice %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
-                        <% }) %>
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <% product.variants.forEach((variant, variantIndex) => { %>
-                          <%= variant.sellPrice %><%= (variantIndex < product.variants.length - 1) ? ', ' : '' %>
-                        <% }) %>
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <img
-                          src="/media/uploads/<%= product.product_image %>"
-                          alt="Product Image"
-                          class="w-6 h-6 object-cover rounded-md" style="height: 30px;"
-                        />
-                      </td>
-                      <td class="p-3 border border-gray-200">
-                        <a href="/adjustStock/<%=product._id%>" class="bg-blue-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-pen-to-square"></i></a>
-                        <a href="/deleteProduct/<%=product._id%>" class="bg-red-500 text-white px-2 py-1 rounded-md"><i class="fa-solid fa-trash"></i></a>
-                      </td>
+              <% if (products.length === 0) { %>
+                <div class="bg-white text-center text-gray-600 p-6 rounded-md shadow">
+                  No products from this branch.
+                </div>
+              <% } else { %>
+                <table
+                  id="productsTable"
+                  class="min-w-full px-1 text-sm text-left bg-white border border-gray-200 rounded-lg shadow-sm"
+                >
+                  <thead>
+                    <tr class="bg-slate-100 text-gray-700 font-medium border-b">
+                      <th class="p-3 border border-gray-200">No</th>
+                      <th class="p-3 border border-gray-200">Products</th>
+                      <th class="p-3 border border-gray-200">Unit Code</th>
+                      <th class="p-3 border border-gray-200">Quantity</th>
+                      <th class="p-3 border border-gray-200">Low Stock Alert</th>
+                      <th class="p-3 border border-gray-200">Suppliers Price</th>
+                      <th class="p-3 border border-gray-200">Sell Price</th>
+                      <th class="p-3 border border-gray-200">Image</th>
+                      <% if (user.role.toLowerCase() === 'admin' || user.role.toLowerCase() === 'owner') { %>
+                      <th class="p-3 border border-gray-200">Option</th>
+                      <% } %>
                     </tr>
-                  <% }) %>
-                <% } %>
-              </tbody>
+                  </thead>
+                  <tbody>
+                    <% products.forEach((product, index) => { %>
+                      <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 border border-gray-200"><%= index + 1 %></td>
+                        <td class="p-3 border border-gray-200"><%= product.product %></td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.unitCode %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.quantity %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.lowStockAlert %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.supplierPrice %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <% product.variants.forEach((variant, i) => { %>
+                            <%= variant.sellPrice %><%= i < product.variants.length - 1 ? ', ' : '' %>
+                          <% }) %>
+                        </td>
+                        <td class="p-3 border border-gray-200">
+                          <img
+                            src="/media/uploads/<%= product.product_image %>"
+                            alt="Product Image"
+                            class="w-6 h-6 object-cover rounded-md" style="height: 30px;"
+                          />
+                        </td>
+                        <% if (user.role.toLowerCase() === 'admin' || user.role.toLowerCase() === 'owner') { %>
+                        <td class="p-3 border border-gray-200">
+                            <a href="/adjustStock/<%= product._id %>" class="bg-blue-500 text-white px-2 py-1 rounded-md">
+                              <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="/deleteProduct/<%= product._id %>" class="bg-red-500 text-white px-2 py-1 rounded-md">
+                              <i class="fa-solid fa-trash"></i>
+                            </a>
+                          </td>
+                          <% } %>
+                        
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
               
+                <script>
+                  $(document).ready(function () {
+                    $('#productsTable').DataTable();
+                  });
+                </script>
+              <% } %>
               
-            </table>
             
             </div>
           </section>

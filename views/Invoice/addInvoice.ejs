@@ -17,7 +17,7 @@
               <h2 class="text-xl font-semibold text-gray-800 mb-4">
                 Create Invoice
               </h2>
-              <div class="bg-white px-6 py-2">
+              <div class="bg-white px-6 py-2" >
                 <div class="flex flex-col gap-4">
                   <!-- Hidden input for customer ID -->
                   <input type="hidden" name="customer_id" id="customerId">
@@ -95,7 +95,7 @@
                   </script>
             
                   <!-- Date Picker -->
-                  <div class="flex gap-3 items-top">
+                  <div class="flex gap-3 items-top mt-6" style="width: 30%;">
                     <label class="w-52 text-gray-700">
                       Date <span class="text-red-500">*</span>
                     </label>
@@ -103,6 +103,15 @@
                       type="date"
                       name="createdAt"
                       class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" />
+                  </div>
+                  <div class="flex gap-3 items-top mb-6" style="width: 30%;">
+                    <label class="w-52 text-gray-700">
+                      Type of Sales <span class="text-red-500">*</span>
+                    </label>
+                    <select class="w-full border border-green-500 p-2 rounded" name="payment_type">
+                      <option value="cash">Cash</option>
+                      <option value="pos">Credit</option>
+                    </select>
                   </div>
                 </div>
             
@@ -225,15 +234,6 @@
                             Submit
                           </button>
                         </div>
-                      </td>
-            
-                      <td colspan="2" class="p-2 text-right border border-gray-200">Total Due:</td>
-                      <td class="p-2 border border-gray-200">
-                        <input
-                          type="number"
-                          value="0.00"
-                          name="total_due"
-                          class="w-full border border-gray-200 px-2 py-1" />
                       </td>
                     </tr>
                   </tbody>

@@ -35,10 +35,8 @@
   <thead class="bg-white text-gray-700">
     <tr class="hover:bg-gray-50 even:bg-gray-50 transition">
       <th class="p-3 border border-gray-200">No</th>
-      <th class="p-3 border border-gray-200">Item</th>
-      <th class="p-3 border border-gray-200">Unit</th>
-      <th class="p-3 border border-gray-200">Qty</th>
-      <th class="p-3 border border-gray-200">Total Amount (₦)</th>
+      <th class="p-3 border border-gray-200">Invoice No</th>
+      <th class="p-3 border border-gray-200">Grand Total (₦)</th>
       <th class="p-3 border border-gray-200">Paid (₦)</th>
       <th class="p-3 border border-gray-200">Unpaid (₦)</th>
       <th class="p-3 border border-gray-200">Supplier</th>
@@ -50,20 +48,21 @@
     <% stock.forEach((entry, index) => { %>
       <tr class="border-t hover:bg-gray-50 even:bg-gray-50 transition">
         <td class="p-3 border border-gray-200"><%= index + 1 %></td>
-        <td class="p-3 border border-gray-200"><%= entry.item_name %></td>
-        <td class="p-3 border border-gray-200"><%= entry.unitCode %></td>
-        <td class="p-3 border border-gray-200"><%= entry.item_qty %></td>
-        <td class="p-3 border border-gray-200">₦ <%= entry.total_amount || 0 %></td>
+        <td class="p-3 border border-gray-200"><%= entry.invoice_number %></td>
+        <td class="p-3 border border-gray-200">₦ <%= entry.grand_total || 0 %></td>
         <td class="p-3 border border-gray-200 text-green-700">₦ <%= entry.paid_amount %></td>
         <td class="p-3 border border-gray-200 text-red-700">₦ <%= entry.due_amount %></td>
         <td class="p-3 border border-gray-200"><%= entry.supplier?.supplier || 'N/A' %></td>
         <td class="p-3 border border-gray-200"><%= entry.payment_date?.toDateString() || 'N/A' %></td>
         <td class="p-3 border border-gray-200 flex space-x-2">
-          <button class="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs hover:bg-yellow-200">
-            ✏ Edit
-          </button>
-          <a href="/deleteReceivedStock/<%= entry._id %>" class="flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs hover:bg-red-200">
-            🗑 Delete
+          <a href="/viewReceivedStock/<%= entry._id %>" class="bg-blue-500 text-white px-2 py-1 rounded-md" style="background-color: #467c5a;">
+            <i class="fa-solid fa-eye"></i>
+          </a>
+          <a href="" class="bg-blue-500 text-white px-2 py-1 rounded-md">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </a>
+          <a href="/deleteEachReceivedStock/<%= entry._id %>" class="bg-red-500 text-white px-2 py-1 rounded-md">
+            <i class="fa-solid fa-trash"></i>
           </a>
         </td>
       </tr>

@@ -2353,99 +2353,109 @@ router.get("/received-stock", (req, res)=>{
 
 router.post('/addReceiveStock', (req, res) => {
   const {
+    invoice_number,
     supplier,
-    branch,
     payment_date,
-    item_name,      // Product name (for reference / display)
-    product_id,     // Product ID (for database update)
-    unitCode,
-    item_qty,
-    item_rate,      // Item rate as a string
     paid_amount,
     payment_status,
+    item_name,
+    product_id,
+    unitCode,
+    item_qty,
+    item_rate
   } = req.body;
 
-  // Parse item_rate to ensure it's a valid number
-  const itemRate = parseFloat(item_rate);  // Convert item_rate to number
-  if (isNaN(itemRate)) {
-    console.log('Invalid item rate:', item_rate);
-    return res.status(400).send('Invalid item rate');
+  const items = [];
+  let grandTotal = 0;
+
+  const wrapAsArray = (val) => (Array.isArray(val) ? val : [val]);
+
+  const names = wrapAsArray(item_name);
+  const ids = wrapAsArray(product_id);
+  const units = wrapAsArray(unitCode);
+  const qtys = wrapAsArray(item_qty);
+  const rates = wrapAsArray(item_rate);
+
+
+  const branch = req.user ? req.user.branch : null;
+
+  if (!branch) {
+    return res.status(400).send('Branch information is required.');
   }
 
-  const total_amount = item_qty * itemRate;
-  const due_amount = total_amount - paid_amount;
+  let currentIndex = 0;
 
-  const newReceivedStock = new ReceivedStock({
-    supplier,
-    branch,
-    payment_date,
-    item_name,     // Saved as-is for human reference
-    unitCode,
-    item_qty,
-    item_rate: itemRate,  // Ensure the rate is stored as a number
-    paid_amount,
-    total_amount,
-    due_amount,
-    payment_status,
-  });
+  function processNextProduct() {
+    if (currentIndex >= names.length) {
+      return ReceivedStock.create({
+        invoice_number,
+        supplier,
+        branch: branch, 
+        payment_date,
+        items,
+        grand_total: grandTotal,
+        paid_amount,
+        due_amount: grandTotal - paid_amount,
+        payment_status
+      })
+        .then(() => {
+          res.redirect('/received-stock');
+        })
+        .catch(err => {
+          console.error('Error saving received stock:', err);
+          res.status(500).send('Server error');
+        });
+    }
 
-  newReceivedStock.save()
-    .then((savedStock) => {
-      return Product.findById(product_id);
-    })
-    .then((product) => {
-      if (!product) {
-        throw new Error('Product not found.');
-      }
 
-      // Check for existing unitCode in variants
-      const existingVariant = product.variants.find(v => v.unitCode === unitCode);
+    const total = parseFloat(qtys[currentIndex]) * parseFloat(rates[currentIndex]);
+    grandTotal += total;
 
-      // Log before modifying the variant
-      console.log('Product before update:', product);
-
-      if (existingVariant) {
-        existingVariant.quantity += Number(item_qty);
-        existingVariant.supplierPrice = itemRate;
-      } else {
-        // Check for placeholder variant to replace
-        if (
-          product.variants.length === 1 &&
-          product.variants[0].unitCode === "" &&
-          product.variants[0].quantity === 0
-        ) {
-          product.variants[0] = {
-            quantity: Number(item_qty),
-            unitCode,
-            lowStockAlert: 0,
-            supplierPrice: itemRate,
-            sellPrice: 0,
-            supplier,
-          };
-        } else {
-          product.variants.push({
-            quantity: Number(item_qty),
-            unitCode,
-            lowStockAlert: 0,
-            supplierPrice: itemRate,
-            sellPrice: 0,
-            supplier,
-          });
-        }
-      }
-
-      console.log('Updated product variants:', product.variants);
-
-      return product.save();
-    })
-    .then(() => {
-      res.redirect('/success');
-    })
-    .catch((err) => {
-      console.error('Error processing received stock:', err);
-      res.status(500).send('Internal Server Error while updating stock.');
+    items.push({
+      product: ids[currentIndex],
+      item_name: names[currentIndex],
+      unitCode: units[currentIndex],
+      item_qty: qtys[currentIndex],
+      item_rate: rates[currentIndex],
+      item_total: total
     });
+
+
+    Product.findById(ids[currentIndex])
+      .then(product => {
+        if (!product || !product.variants || product.variants.length === 0) return;
+
+        const variants = product.variants;
+        const baseIndex = variants.findIndex(v => v.unitCode === units[currentIndex]);
+        if (baseIndex === -1) return;
+
+        variants[baseIndex].quantity += parseFloat(qtys[currentIndex]);
+
+
+        variants[baseIndex].supplierPrice = parseFloat(rates[currentIndex]);
+
+        let prevQty = variants[baseIndex].quantity;
+        for (let j = baseIndex + 1; j < variants.length; j++) {
+          prevQty = prevQty * variants[j].totalInBaseUnit;
+          variants[j].quantity = prevQty;
+        }
+
+        return product.save();
+      })
+      .then(() => {
+        currentIndex++;
+        processNextProduct();
+      })
+      .catch(err => {
+        console.error('Error updating product:', err);
+        res.status(500).send('Server error');
+      });
+  }
+  processNextProduct();
 });
+
+
+
 
 
 router.get("/deleteReceivedStock/:id", (req,res)=>{
@@ -2459,6 +2469,163 @@ router.get("/deleteReceivedStock/:id", (req,res)=>{
   console.log(req.params);
   
 })
+
+router.get("/viewReceivedStock/:id", (req, res) => {
+   if (req.isAuthenticated()) {
+    User.findById(req.user._id)
+      .populate("branch")
+      .then(user => {
+        if (!user) return res.redirect("/sign-in");
+
+        if (user.role === 'owner') {
+          Branch.findById(user.branch)
+            .then(ownerBranch => {
+              Branch.find()
+                .then(allBranches => {
+                  ReceivedStock.findById(req.params.id)
+                  .populate("supplier")
+                  .populate("branch") 
+                  .populate({
+                    path: 'items.product', 
+                    select: 'name unitCode' 
+                  })
+                  .then(receivedStock => {
+                      if (!receivedStock) {
+                        return res.redirect("/error-404");  // If the stock is not found
+                      }
+                        res.render("ReceivedStock/viewStock", {
+                        user: user,
+                        ownerBranch: { branch: ownerBranch },
+                        branches: allBranches,
+                        receivedStock
+                      });
+                    })
+                })
+                .catch(err => {
+                  console.error(err);
+                  res.redirect('/error-404');
+                });
+            })
+            .catch(err => {
+              console.error(err);
+              res.redirect('/error-404');
+            });
+        } else {
+          ReceivedStock.findById(req.params.id)
+          .populate("supplier")
+          .populate("branch") 
+          .populate({
+            path: 'items.product', 
+            select: 'name unitCode' 
+          })
+          .then(receivedStock => {
+              if (!receivedStock) {
+                return res.redirect("/error-404");  // If the stock is not found
+              }
+                res.render("ReceivedStock/viewStock", {
+                user: user,
+                ownerBranch: { branch: ownerBranch },
+                receivedStock
+              });
+            })
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        res.redirect("/error-404");
+      });
+  } else {
+    res.redirect("/sign-in");
+  }
+});
+
+router.get("/deleteEachReceivedStock/:id", (req, res) => {
+  const receivedStockId = req.params.id;
+
+  ReceivedStock.findById(receivedStockId)
+    .then(stock => {
+      if (!stock) {
+        res.status(404).send("Received stock not found");
+        return Promise.reject(); // stop the chain
+      }
+
+      let index = 0;
+
+      function processNextItem() {
+        if (index >= stock.items.length) {
+          // After all items processed, delete the stock
+          return ReceivedStock.findByIdAndDelete(receivedStockId)
+            .then(() => {
+              console.log("Stock successfully deleted and inventory adjusted");
+              res.redirect("/received-stock");
+            })
+            .catch(err => {
+              console.error("Error deleting stock:", err);
+              res.status(500).send("Server error");
+            });
+        }
+
+        const item = stock.items[index];
+
+        Product.findById(item.product)
+          .then(product => {
+            if (!product || !product.variants) {
+              index++;
+              processNextItem();
+              return;
+            }
+
+            const variants = product.variants;
+            const baseIndex = variants.findIndex(v => v.unitCode === item.unitCode);
+            if (baseIndex === -1) {
+              index++;
+              processNextItem();
+              return;
+            }
+
+            // Subtract quantity and reset supplier price
+            variants[baseIndex].quantity -= item.item_qty;
+            variants[baseIndex].supplierPrice = null;
+
+            // Recalculate lower variant quantities
+            let prevQty = variants[baseIndex].quantity;
+            for (let j = baseIndex + 1; j < variants.length; j++) {
+              prevQty = prevQty * variants[j].totalInBaseUnit;
+              variants[j].quantity = prevQty;
+            }
+
+            return product.save()
+              .then(() => {
+                index++;
+                processNextItem();
+              });
+          })
+          .catch(err => {
+            console.error("Error processing product:", err);
+            res.status(500).send("Server error");
+          });
+      }
+
+      processNextItem();
+    })
+    .catch(err => {
+      if (err) {
+        console.error("Error finding received stock:", err);
+        res.status(500).send("Server error");
+      }
+    });
+});
+
+
+
+router.post("/updateEachReceivedStock/:id", (req, res) => {
+console.log("Received ID:", req.params.id);
+
+});
+
+
+
+
 
 router.use(require("../route/query"))
 

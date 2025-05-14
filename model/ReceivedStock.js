@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const receivedStockSchema = new Schema({
+  invoice_number: {
+    type: String,
+    required: true
+  },
   supplier: {
     type: Schema.Types.ObjectId,
     ref: 'Supplier',
@@ -16,24 +20,37 @@ const receivedStockSchema = new Schema({
     type: Date,
     required: true,
   },
-  item_name: {
-    type: String,
-    required: true,
-  },
-  unitCode: String,
-  item_qty: {
-    type: Number,
-    required: true,
-  },
-  item_rate: {
+  items: [
+    {
+      product: {
+        type: Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
+      },
+      item_name: {
+        type: String,
+        required: true,
+      },
+      unitCode: String,
+      item_qty: {
+        type: Number,
+        required: true,
+      },
+      item_rate: {
+        type: Number,
+        required: true,
+      },
+      item_total: {
+        type: Number,
+        required: true,
+      }
+    }
+  ],
+  grand_total: {
     type: Number,
     required: true,
   },
   paid_amount: {
-    type: Number,
-    required: true,
-  },
-  total_amount: {
     type: Number,
     required: true,
   },
@@ -50,6 +67,11 @@ const receivedStockSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+receivedStockSchema.pre('save', function(next) {
+  this.due_amount = this.grand_total - this.paid_amount;
+  next();
 });
 
 module.exports = mongoose.model('ReceivedStock', receivedStockSchema);

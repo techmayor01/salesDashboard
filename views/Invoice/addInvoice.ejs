@@ -7,382 +7,444 @@
     <div class="relative flex flex-col min-h-screen bg-slate-200">
       <%- include ('../partials/header') %>
 
-     
-          <div class="flex flex-row">
-            <div class="w-[220px] p-4"><%- include ('../partials/sidebar') %></div>
-            <main
-            class="cal relative top-16 p-4 overflow-auto"
-            style="width: calc(100% - 220px)">
-            <form action="/addinvoice" method="post">
-              <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                Create Invoice
-              </h2>
-              <div class="bg-white px-6 py-2" >
-                <div class="flex flex-col gap-4">
-                  <!-- Hidden input for customer ID -->
-                  <input type="hidden" name="customer_id" id="customerId">
+      <div class="flex flex-row">
+        <div class="w-[220px] p-4"><%- include ('../partials/sidebar') %></div>
+        <main
+        class="cal relative top-16 p-4 overflow-auto"
+        style="width: calc(100% - 220px)">
+        <form action="/addinvoice" method="post">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Create Sales
+          </h2>
+          <div class="bg-white px-6 py-2" >
+            <div class="flex flex-col gap-4">
+              <!-- Hidden input for customer ID -->
+              <input type="hidden" name="customer_id" id="customerId">
+        
+              <!-- Select Supplier -->
+              <input
+                type="text"
+                name="customer_name"
+                id="customerSearch"
+                autocomplete="off"
+                class="w-full text-gray-600 border-gray-300 border px-2 py-1 focus:ring focus:ring-blue-300"
+                placeholder="Search Customer" />
             
-                  <!-- Select Supplier -->
-                  <input
-                    type="text"
-                    name="customer_name"
-                    id="customerSearch"
-                    autocomplete="off"
-                    class="w-full text-gray-600 border-gray-300 border px-2 py-1 focus:ring focus:ring-blue-300"
-                    placeholder="Search Customer" />
-                
-                  <ul id="customerSuggestions" class="bg-white border border-gray-200 mt-1 rounded shadow text-sm max-h-60 overflow-y-auto hidden"></ul>
-                
-                  <!-- Display Credit Limit and Remaining Amount -->
-                  <div id="customerInfo" class="mt-4 hidden">
-                    <p id="creditLimit" class="text-gray-600"></p>
-                    <p id="remainingAmount" class="text-gray-600" style="color: red;"></p>
-                  </div>
+              <ul id="customerSuggestions" class="bg-white border border-gray-200 mt-1 rounded shadow text-sm max-h-60 overflow-y-auto hidden"></ul>
             
-                  <script>
-                    const input = document.getElementById("customerSearch");
-                    const suggestions = document.getElementById("customerSuggestions");
-                    const customerIdInput = document.getElementById("customerId");
-                    const customerInfo = document.getElementById("customerInfo");
-                    const creditLimitElement = document.getElementById("creditLimit");
-                    const remainingAmountElement = document.getElementById("remainingAmount");
-            
-                    input.addEventListener("input", async function () {
-                      const query = this.value;
-            
-                      if (query.length < 2) {
-                        suggestions.classList.add("hidden");
-                        return;
-                      }
-            
-                      try {
-                        const res = await fetch(`/search-customers?q=${query}`);
-                        const customers = await res.json();
-            
-                        suggestions.innerHTML = "";
-                        customers.forEach((cust) => {
-                          const li = document.createElement("li");
-                          li.textContent = `${cust.customer_name} - ${cust.mobile}`;
-                          li.className = "p-2 hover:bg-gray-100 cursor-pointer";
-            
-                          li.addEventListener("click", () => {
-                            input.value = cust.customer_name;    // Set name in input
-                            customerIdInput.value = cust._id;     // Set ID in hidden input
-                            suggestions.classList.add("hidden");
-            
-                            // Display customer credit limit and remaining amount
-                            creditLimitElement.textContent = `Credit Limit: ₦${cust.credit_limit || 0}`;
-                            remainingAmountElement.textContent = `Debt Amount: ₦${cust.transactions[0]?.remaining_amount || 0}`;            
-                            // Show the customer info
-                            customerInfo.classList.remove("hidden");
-                          });
-            
-                          suggestions.appendChild(li);
-                        });
-            
-                        suggestions.classList.remove("hidden");
-                      } catch (err) {
-                        console.error("Failed to fetch customers:", err);
-                      }
-                    });
-            
-                    // Hide suggestions on outside click
-                    document.addEventListener("click", (e) => {
-                      if (!input.contains(e.target) && !suggestions.contains(e.target)) {
-                        suggestions.classList.add("hidden");
-                      }
-                    });
-                  </script>
-            
-                  <!-- Date Picker -->
-                  <div class="flex gap-3 items-top mt-6" style="width: 30%;">
-                    <label class="w-52 text-gray-700">
-                      Date <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="createdAt"
-                      class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" />
-                  </div>
-                  <div class="flex gap-3 items-top mb-6" style="width: 30%;">
-                    <label class="w-52 text-gray-700">
-                      Type of Sales <span class="text-red-500">*</span>
-                    </label>
-                    <select class="w-full border border-green-500 p-2 rounded" name="payment_type">
-                      <option value="cash">Cash</option>
-                      <option value="pos">Credit</option>
-                    </select>
-                  </div>
-                </div>
-            
-                <div class="flex gap-3 items-top">
-                  <a href="/addCustomers" class="px-3 py-1 bg-green-500 text-white text-sm">New Customer</a>
-                </div>
+              <!-- Display Credit Limit and Remaining Amount -->
+              <div id="customerInfo" class="mt-4 hidden">
+                <p id="creditLimit" class="text-gray-600"></p>
+                <p id="remainingAmount" class="text-gray-600" style="color: red;"></p>
               </div>
-            
-              <div class="bg-white p-5">
-                <table class="w-full border-collapse border border-gray-200">
-                  <thead>
-                    <tr class="text-left text-gray-700 text-sm">
-                      <th class="p-2 border border-gray-200">
-                        Item Information <span class="text-red-500">*</span>
-                      </th>
-                      <th class="p-2 border border-gray-200">
-                        Available Qty <span class="text-red-500">*</span>
-                      </th>
-                      <th class="p-2 border border-gray-200">
-                        Quantity <span class="text-red-500">*</span>
-                      </th>
-                      <th class="p-2 border border-gray-200">
-                        Unit Code
-                      </th>
-                      <th class="p-2 border border-gray-200">
-                        Rate
-                      </th>
-                      <th class="p-2 border border-gray-200">
-                        Total
-                      </th>
-                      <th class="p-2 border border-gray-200 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="text-sm">
-                      <td class="p-2 border border-gray-200 relative">
-                        <input
-                          type="text"
-                          placeholder="product"
-                          name="product"
-                          class="productSearch w-full border border-gray-200 px-2 py-1" />
-                        <ul class="productSuggestions absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded shadow text-sm max-h-60 overflow-y-auto hidden" style="min-height: 100px;"></ul>
-                      </td>
-            
-                      <td class="p-2 border border-gray-200">
-                        <input type="number" value="0" class="w-full border border-gray-200 px-2 py-1" readonly />
-                      </td>
-            
-                      <td class="p-2 border border-gray-200">
-                        <input name="qty" type="number" value="" class="w-full border border-gray-200 px-2 py-1" />
-                      </td>
-            
-                      <td class="p-2 border border-gray-200">
-                        <select name="unitcode" class="w-full border border-gray-200 px-2 py-1">
-                          <option value="">Select Unit</option>
-                        </select>
-                      </td>
-            
-                      <td class="p-2 border border-gray-200">
-                        <input name="rate" type="number" value="0.00" class="w-full border border-gray-200 px-2 py-1" readonly />
-                      </td>
-            
-                      <td class="p-2 border border-gray-200">
-                        <input name="total" type="text" value="0.00" class="w-full border border-gray-200 px-2 py-1 bg-gray-100" readonly />
-                      </td>
-            
-                      <td class="p-2 border border-gray-200 text-center">
-                        <button class="bg-red-500 text-white px-3 py-1">
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-            
-                    <!-- Summary Section -->
-                    <tr class="text-sm">
-                      <td colspan="2" class="p-2 text-right border border-gray-200">Payment Type:</td>
-                      <td colspan="2" class="p-2 border border-gray-200">
-                        <select class="w-full border border-green-500 p-2 rounded" name="payment_type">
-                          <option value="">Select Payment Type</option>
-                          <option value="cash">Cash</option>
-                          <option value="pos">POS</option>
-                          <option value="transfer">Bank Transfer</option>
-                        </select>
-                      </td>
-                      <td colspan="2" class="p-2 text-right border border-gray-200">Grand Total:</td>
-                      <td class="p-2 border border-gray-200">
-                        <input
-                          type="number"
-                          name="grand_total"
-                          value="0.00"
-                          class="w-full border border-gray-200 px-2 py-1" />
-                      </td>
-                      <td></td>
-                    </tr>
-            
-                    <tr class="text-sm">
-                      <td colspan="2" class="border border-gray-200"></td>
-                      <td colspan="2">
-                        <input
-                          type="text"
-                          class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" placeholder="Payment Type Reference #/Details"/>
-                      </td>
-                      <td colspan="2" class="p-2 text-right border border-gray-200">Paid Amount:</td>
-                      <td class="p-2 border border-gray-200">
-                        <input
-                          type="number"
-                          value="0.00"
-                          name="paid_amount"
-                          class="w-full border border-gray-200 px-2 py-1" />
-                      </td>
-                      <td></td>
-                    </tr>
-            
-                    <!-- Submit & Full Paid Buttons -->
-                    <tr class="text-sm">
-                      <td colspan="2" class="border border-gray-200"></td>
-                      <td colspan="2" class="p-2 border border-gray-200">
-                        <div class="mt-4 flex gap-4 items-center justify-center">
-                          <button class="bg-green-500 text-white px-3 py-1">
-                            Submit
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-            
-                <!-- Add Item Button -->
-              </div>
-            </form>
-            
-            </main>
-          </div>
-        </div>
-        <script>
-          document.addEventListener('DOMContentLoaded', function () {
-            const productInputs = document.querySelectorAll(".productSearch");
         
-            productInputs.forEach(productInput => {
-              const productSuggestions = productInput.nextElementSibling; // the <ul> right after input
-              const tableRow = productInput.closest("tr"); // get the row where the product input is located
-              let selectedProduct = null; // Variable to store the selected product
+              <script>
+                const input = document.getElementById("customerSearch");
+                const suggestions = document.getElementById("customerSuggestions");
+                const customerIdInput = document.getElementById("customerId");
+                const customerInfo = document.getElementById("customerInfo");
+                const creditLimitElement = document.getElementById("creditLimit");
+                const remainingAmountElement = document.getElementById("remainingAmount");
         
-              // Handle input for product search
-              productInput.addEventListener("input", async function () {
-                const query = this.value.trim();
+                input.addEventListener("input", async function () {
+                  const query = this.value;
         
-                if (query.length < 2) {
-                  productSuggestions.classList.add("hidden");
-                  return;
-                }
+                  if (query.length < 2) {
+                    suggestions.classList.add("hidden");
+                    return;
+                  }
         
-                try {
-                  const res = await fetch(`/search-products?q=${query}`);
-                  const products = await res.json();
+                  try {
+                    const res = await fetch(`/search-customers?q=${query}`);
+                    const customers = await res.json();
         
-                  productSuggestions.innerHTML = "";
-                  products.forEach((product) => {
-                    const li = document.createElement("li");
-                    li.textContent = `${product.product} (${product.available_qty ?? 0} available)`;
-                    li.className = "p-2 hover:bg-gray-100 cursor-pointer";
-                    li.addEventListener("click", () => {
-                      // Populate the selected product details into the table row
-                      productInput.value = product.product;
-                      selectedProduct = product; // Store selected product
+                    suggestions.innerHTML = "";
+                    customers.forEach((cust) => {
+                      const li = document.createElement("li");
+                      li.textContent = `${cust.customer_name} - ${cust.mobile}`;
+                      li.className = "p-2 hover:bg-gray-100 cursor-pointer";
         
-                      // Set initial available qty and rate
-                      const availableQty = product.variants[product.variants.length - 1]?.quantity ?? 0; // Using last variant's quantity
-                      const rate = product.variants[product.variants.length - 1]?.sellPrice ?? 0;
+                      li.addEventListener("click", () => {
+                        input.value = cust.customer_name;    // Set name in input
+                        customerIdInput.value = cust._id;     // Set ID in hidden input
+                        suggestions.classList.add("hidden");
         
-                      // Update Available Quantity and Rate fields
-                      tableRow.querySelector("td:nth-child(2) input").value = availableQty; // Available Qty
-                      tableRow.querySelector("td:nth-child(5) input").value = rate; // Rate
-                      tableRow.querySelector("td:nth-child(6) input").value = (rate * 1).toFixed(2); // Total (initially quantity = 1)
-        
-                      // Populate unit code dropdown
-                      const unitCodeSelect = tableRow.querySelector("td:nth-child(4) select");
-                      unitCodeSelect.innerHTML = "<option value=''>Select Unit</option>"; // Clear previous options
-        
-                      product.variants.forEach(variant => {
-                        const option = document.createElement("option");
-                        option.value = variant.unitCode;
-                        option.textContent = variant.unitCode;
-                        unitCodeSelect.appendChild(option);
+                        // Display customer credit limit and remaining amount
+                        creditLimitElement.textContent = `Credit Limit: ₦${cust.credit_limit || 0}`;
+                        remainingAmountElement.textContent = `Debt Amount: ₦${cust.transactions[0]?.remaining_amount || 0}`;            
+                        // Show the customer info
+                        customerInfo.classList.remove("hidden");
                       });
         
-                      productSuggestions.classList.add("hidden"); // Hide suggestions once selection is made
-                      unitCodeSelect.disabled = false; // Enable unit code selection
+                      suggestions.appendChild(li);
                     });
-                    productSuggestions.appendChild(li);
-                  });
         
-                  productSuggestions.classList.remove("hidden");
-                } catch (err) {
-                  console.error("Failed to fetch products:", err);
-                }
-              });
-        
-              // Handle unit code selection and quantity change
-              const unitCodeSelect = tableRow.querySelector("td:nth-child(4) select");
-              const quantityInput = tableRow.querySelector("td:nth-child(3) input");
-        
-              if (unitCodeSelect && quantityInput) {
-                unitCodeSelect.addEventListener("change", updateRateAndTotal); // Change unit code
-                quantityInput.addEventListener("input", updateTotal); // Change quantity
-              }
-        
-              // Function to update rate and total when unit code is changed
-              function updateRateAndTotal() {
-                const selectedUnitCode = unitCodeSelect.value;
-        
-                if (selectedProduct && selectedUnitCode) {
-                  // Find the variant that matches the selected unit code
-                  const selectedVariant = selectedProduct.variants.find(v => v.unitCode === selectedUnitCode);
-                  if (selectedVariant) {
-                    const rate = selectedVariant.sellPrice; // Get the correct rate based on unit code
-                    tableRow.querySelector("td:nth-child(5) input").value = rate; // Update the rate field
-        
-                    updateTotal(); // Recalculate the total for this row
-                  }
-                }
-              }
-        
-              // Function to update the total when quantity is changed
-              function updateTotal() {
-                const selectedUnitCode = unitCodeSelect.value;
-                const quantity = parseFloat(quantityInput.value) || 0;
-        
-                if (selectedProduct && selectedUnitCode) {
-                  const selectedVariant = selectedProduct.variants.find(v => v.unitCode === selectedUnitCode);
-                  if (selectedVariant) {
-                    const rate = selectedVariant.sellPrice;
-                    const total = (rate * quantity).toFixed(2);
-                    tableRow.querySelector("td:nth-child(6) input").value = total; // Update total for the row
-                  }
-                }
-        
-                updateGrandTotal(); // Update grand total for the invoice
-              }
-        
-              // Update grand total across all rows
-              function updateGrandTotal() {
-                let grandTotal = 0;
-                document.querySelectorAll("tr.text-sm").forEach(row => {
-                  const totalInput = row.querySelector("td:nth-child(6) input"); // Get the total input
-                  if (totalInput) {
-                    const rowTotal = parseFloat(totalInput.value) || 0;
-                    grandTotal += rowTotal;
+                    suggestions.classList.remove("hidden");
+                  } catch (err) {
+                    console.error("Failed to fetch customers:", err);
                   }
                 });
-                const grandTotalInput = document.querySelector("input[name='grand_total']");
-                if (grandTotalInput) {
-                  grandTotalInput.value = grandTotal.toFixed(2); // Update grand total input
-                }
-              }
         
-              // Close suggestions if clicked outside the input
-              document.addEventListener("click", (e) => {
-                if (!productInput.contains(e.target) && !productSuggestions.contains(e.target)) {
-                  productSuggestions.classList.add("hidden");
-                }
-              });
-            });
-          });
-        </script>
+                // Hide suggestions on outside click
+                document.addEventListener("click", (e) => {
+                  if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.classList.add("hidden");
+                  }
+                });
+              </script>
         
+              <!-- Date Picker -->
+              <div class="flex gap-3 items-top mt-6" style="width: 30%;">
+                  <div>
+                    <label class="block font-medium text-gray-700 mb-1">
+                      Date <span class="text-red-500">*</span>
+                    </label>
+                    <input readonly
+                      type="date"
+                      name="payment_date"
+                      id="payment_date"
+                      style="border: none; outline: none;"
+                    />
+                  </div>
+                  <script>
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('payment_date').value = today;
+                  </script>
+              </div>
+              <div class="flex gap-3 items-top mb-6" style="width: 30%;">
+                <label class="w-52 text-gray-700">
+                  Type of Sales <span class="text-red-500">*</span>
+                </label>
+                <select class="w-full border border-green-500 p-2 rounded" name="sales_type">
+                  <option value="cash">Cash</option>
+                  <option value="pos">Credit</option>
+                </select>
+              </div>
+            </div>
+        
+            <div class="flex gap-3 items-top" style="display: flex; justify-content: space-between; align-items: center;">
+              <a href="/addCustomers" class="px-3 py-1 bg-green-500 text-white text-sm">New Customer</a>
+              <div>
+                <label class="block font-medium text-gray-700 mb-1">
+                  Add Discount
+                </label>
+                <input type="number" name="discount" placeholder="Discount" class="w-half border border-gray-200 px-2 py-1" >
+              </div>
+            </div>
+          </div>
+        
+          <div class="bg-white p-5">
+            <table class="w-full border-collapse border border-gray-200">
+              <thead>
+                <tr class="text-left text-gray-700 text-sm">
+                  <th class="p-2 border border-gray-200">
+                    Item Information <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Available Qty <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Quantity <span class="text-red-500">*</span>
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Unit Code
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Rate
+                  </th>
+                  <th class="p-2 border border-gray-200">
+                    Total
+                  </th>
+                  <th class="p-2 border border-gray-200 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-sm">
+                  <td class="p-2 border border-gray-200 relative">
+                    <input
+                      type="text"
+                      placeholder="product"
+                      name="product"
+                      class="productSearch w-full border border-gray-200 px-2 py-1" />
+                    <ul class="productSuggestions absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded shadow text-sm max-h-60 overflow-y-auto hidden" style="min-height: 100px;"></ul>
+                  </td>
+        
+                  <td class="p-2 border border-gray-200">
+                    <input type="number" value="0" class="w-full border border-gray-200 px-2 py-1" readonly />
+                  </td>
+        
+                  <td class="p-2 border border-gray-200">
+                    <input name="qty" type="number" value="" class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+        
+                  <td class="p-2 border border-gray-200">
+                    <select name="unitcode" class="w-full border border-gray-200 px-2 py-1">
+                      <option value="">Select Unit</option>
+                    </select>
+                  </td>
+        
+                  <td class="p-2 border border-gray-200">
+                    <input name="rate" type="number" value="0.00" class="w-full border border-gray-200 px-2 py-1" readonly />
+                  </td>
+        
+                  <td class="p-2 border border-gray-200">
+                    <input name="total" type="text" value="0.00" class="w-full border border-gray-200 px-2 py-1 bg-gray-100" readonly />
+                  </td>
+        
+                  <td class="p-2 border border-gray-200 text-center">
+                    <button class="bg-red-500 text-white px-3 py-1">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+        
+                <!-- Summary Section -->
+                <tr class="text-sm">
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Payment Type:</td>
+                  <td colspan="2" class="p-2 border border-gray-200">
+                    <select class="w-full border border-green-500 p-2 rounded" name="payment_type">
+                      <option value="">Select Payment Type</option>
+                      <option value="cash">Cash</option>
+                      <option value="pos">POS</option>
+                      <option value="transfer">Bank Transfer</option>
+                    </select>
+                  </td>
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Grand Total:</td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      name="grand_total"
+                      value="0.00"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td></td>
+                </tr>
+        
+                <tr class="text-sm">
+                  <td colspan="2" class="border border-gray-200"></td>
+                  <td colspan="2">
+                    <input
+                      type="text"
+                      class="w-full text-gray-600 border-gray-300 border border-gray-200 px-2 py-1 focus:ring focus:ring-blue-300" placeholder="Payment Type Reference #/Details"/>
+                  </td>
+                  <td colspan="2" class="p-2 text-right border border-gray-200">Paid Amount:</td>
+                  <td class="p-2 border border-gray-200">
+                    <input
+                      type="number"
+                      value="0.00"
+                      name="paid_amount"
+                      class="w-full border border-gray-200 px-2 py-1" />
+                  </td>
+                  <td></td>
+                </tr>
+        
+                <!-- Submit & Full Paid Buttons -->
+                <tr class="text-sm">
+                  <td colspan="2" class="border border-gray-200"></td>
+                  <td colspan="2" class="p-2 border border-gray-200">
+                    <div class="mt-4 flex gap-4 items-center justify-center">
+                      <button class="bg-green-500 text-white px-3 py-1">
+                        Submit
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+        
+            <!-- Add Item Button -->
+            <div id="totalsBreakdown" class="mt-4 p-4  rounded bg-gray-50 max-w-sm" style="width: 30%; margin-left: 680px;">
+              <p><strong>Subtotal:</strong> ₦ <span id="subtotalDisplay">0.00</span></p>
+              <p><strong>Discount:</strong> ₦ <span id="discountDisplay">0.00</span></p>
+              <p><strong>Customer Balance:</strong> ₦ <span id="balanceDisplay" style="color: red;">0.00</span></p>
+              <hr class="my-2" />
+              <p><strong>Grand Total:</strong> ₦ <span id="finalTotalDisplay" class="text-lg font-semibold">0.00</span></p>
+            </div>
+          </div>
 
-     
-     
+        </form>
+        
+        </main>
+      </div>
+    </div>
+
     
-    
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tbody = document.querySelector("tbody");
+
+    function attachProductEvents(row) {
+      const productInput = row.querySelector(".productSearch");
+      const productSuggestions = productInput.nextElementSibling;
+      const unitCodeSelect = row.querySelector("td:nth-child(4) select");
+      const quantityInput = row.querySelector("td:nth-child(3) input");
+      const rateInput = row.querySelector("td:nth-child(5) input");
+      const totalInput = row.querySelector("td:nth-child(6) input");
+
+      let selectedProduct = null;
+
+      productInput.addEventListener("input", async function () {
+        const query = this.value.trim();
+        if (query.length < 2) {
+          productSuggestions.classList.add("hidden");
+          return;
+        }
+
+        try {
+          const res = await fetch(`/search-products?q=${query}`);
+          const products = await res.json();
+
+          productSuggestions.innerHTML = "";
+          products.forEach((product) => {
+            const li = document.createElement("li");
+            li.textContent = `${product.product} (${product.available_qty ?? 0} available)`;
+            li.className = "p-2 hover:bg-gray-100 cursor-pointer";
+            li.addEventListener("click", () => {
+              productInput.value = product.product;
+              selectedProduct = product;
+
+              const availableQty = product.variants[product.variants.length - 1]?.quantity ?? 0;
+              const rate = product.variants[product.variants.length - 1]?.sellPrice ?? 0;
+
+              row.querySelector("td:nth-child(2) input").value = availableQty;
+              rateInput.value = rate;
+              totalInput.value = (rate * 1).toFixed(2);
+
+              unitCodeSelect.innerHTML = "<option value=''>Select Unit</option>";
+              product.variants.forEach(variant => {
+                const option = document.createElement("option");
+                option.value = variant.unitCode;
+                option.textContent = variant.unitCode;
+                unitCodeSelect.appendChild(option);
+              });
+
+              productSuggestions.classList.add("hidden");
+              updateGrandTotal();
+            });
+            productSuggestions.appendChild(li);
+          });
+
+          productSuggestions.classList.remove("hidden");
+        } catch (err) {
+          console.error("Fetch error:", err);
+        }
+
+        const rows = tbody.querySelectorAll("tr.text-sm:not(:has(td[colspan]))");
+        if (row === rows[rows.length - 1]) {
+          addNewRow();
+        }
+      });
+
+      unitCodeSelect.addEventListener("change", () => {
+        if (selectedProduct && unitCodeSelect.value) {
+          const variant = selectedProduct.variants.find(v => v.unitCode === unitCodeSelect.value);
+          if (variant) {
+            rateInput.value = variant.sellPrice;
+            updateTotal();
+          }
+        }
+      });
+
+      quantityInput.addEventListener("input", updateTotal);
+
+      function updateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+        totalInput.value = (quantity * rate).toFixed(2);
+        updateGrandTotal();
+      }
+
+      document.addEventListener("click", (e) => {
+        if (!productInput.contains(e.target) && !productSuggestions.contains(e.target)) {
+          productSuggestions.classList.add("hidden");
+        }
+      });
+    }
+
+    function bindRowEvents(row) {
+      attachProductEvents(row);
+
+      const deleteBtn = row.querySelector("button");
+      const productInput = row.querySelector(".productSearch");
+
+      if (productInput) {
+        productInput.addEventListener("input", () => {
+          const rows = tbody.querySelectorAll("tr.text-sm:not(:has(td[colspan]))");
+          if (row === rows[rows.length - 1]) {
+            addNewRow();
+          }
+        });
+      }
+
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const rows = tbody.querySelectorAll("tr.text-sm:not(:has(td[colspan]))");
+          if (rows.length > 1) row.remove();
+          updateGrandTotal();
+        });
+      }
+    }
+
+    function addNewRow() {
+      const firstRow = tbody.querySelector("tr.text-sm:not(:has(td[colspan]))");
+      const newRow = firstRow.cloneNode(true);
+
+      newRow.querySelectorAll("input").forEach(input => {
+        if (input.type === "number") input.value = input.readOnly ? "0" : "";
+        if (input.type === "text") input.value = "";
+      });
+
+      newRow.querySelector("select").innerHTML = "<option value=''>Select Unit</option>";
+      newRow.querySelector(".productSuggestions").innerHTML = "";
+      newRow.querySelector(".productSuggestions").classList.add("hidden");
+
+      bindRowEvents(newRow);
+      tbody.insertBefore(newRow, tbody.querySelector("tr:nth-last-child(3)"));
+    }
+
+    function updateGrandTotal() {
+      let subtotal = 0;
+
+      // Sum all item totals (subtotal)
+      document.querySelectorAll("tr.text-sm").forEach(row => {
+        const totalInput = row.querySelector("td:nth-child(6) input");
+        if (totalInput) subtotal += parseFloat(totalInput.value) || 0;
+      });
+
+      // Get discount from input
+      const discountInput = document.querySelector("input[name='discount']");
+      const discount = parseFloat(discountInput?.value) || 0;
+
+      // Get remaining amount from p tag
+      const remainingText = document.getElementById("remainingAmount")?.innerText || "0";
+      const remainingAmount = parseFloat(remainingText.replace(/[^\d.-]/g, "")) || 0;
+
+      // Final total = subtotal - discount + customer balance
+      const finalTotal = subtotal - discount + remainingAmount;
+
+      // Update hidden grand total input if exists
+      const grandTotalInput = document.querySelector("input[name='grand_total']");
+      if (grandTotalInput) grandTotalInput.value = finalTotal.toFixed(2);
+
+      // Update the breakdown display
+      document.getElementById("subtotalDisplay").textContent = subtotal.toFixed(2);
+      document.getElementById("discountDisplay").textContent = discount.toFixed(2);
+      document.getElementById("balanceDisplay").textContent = remainingAmount.toFixed(2);
+      document.getElementById("finalTotalDisplay").textContent = finalTotal.toFixed(2);
+    }
+
+    // Trigger total update when discount input changes
+    document.querySelector("input[name='discount']")?.addEventListener("input", updateGrandTotal);
+
+    // Initialize with first row
+    const firstRow = tbody.querySelector("tr.text-sm:not(:has(td[colspan]))");
+    bindRowEvents(firstRow);
+  });
+</script>
+
+
+
 
   </body>
 </html>

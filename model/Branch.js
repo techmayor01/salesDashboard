@@ -22,7 +22,7 @@ const branchSchema = new mongoose.Schema({
     ref: "Product"
   }],
 
-  suppler_invoice: [{
+  supplier_invoice: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "SupplierInvoice"
   }],
@@ -36,6 +36,24 @@ const branchSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer"
   }],
+
+  // Sales-related fields
+  totalSales: {
+    type: Number,
+    default: 0
+  },
+  totalCashSalesAmount: {
+    type: Number,
+    default: 0
+  },
+  totalCreditSales: {
+    type: Number,
+    default: 0
+  },
+  totalDebtorsPayment: {
+    type: Number,
+    default: 0
+  },
 
   createdAt: { type: Date, default: Date.now }
 });

@@ -8,7 +8,7 @@ const customerSchema = new mongoose.Schema({
 
   branch: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Branch", // This assumes your Branch model is named "Branch"
+    ref: "Branch",
     required: true
   },
 
@@ -24,6 +24,7 @@ const customerSchema = new mongoose.Schema({
     }
   ],
   credit_limit: { type: Number },
+  total_debt: { type: Number, default: 0 },
 
   createdAt: { type: Date, default: Date.now }
 });

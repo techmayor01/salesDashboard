@@ -2030,127 +2030,186 @@ router.post("/addInvoice", (req, res) => {
   const {
     customer_id,
     customer_name,
-    createdAt,
+    payment_date,
+    sales_type,
+    discount = 0,
     product,
     qty,
     unitcode,
     rate,
     total,
-    paid_amount,
-    payment_type
+    payment_type,
+    grand_total,
+    paid_amount
   } = req.body;
 
-  const soldQty = Number(qty);
-  const paid = Number(paid_amount);
-  const saleTotal = Number(total);
-  const remaining = saleTotal - paid;
+  // Validate input arrays
+  if (
+    !Array.isArray(product) ||
+    !Array.isArray(qty) ||
+    !Array.isArray(unitcode) ||
+    !Array.isArray(rate) ||
+    !Array.isArray(total)
+  ) {
+    return res.status(400).json({ message: 'Product details must be arrays' });
+  }
+
+  const len = product.length;
+  if (
+    qty.length !== len ||
+    unitcode.length !== len ||
+    rate.length !== len ||
+    total.length !== len
+  ) {
+    return res.status(400).json({ message: 'Product detail arrays must have the same length' });
+  }
+
+  const branchId = req.user.branch;
+  if (!branchId) {
+    return res.status(400).json({ message: 'Branch ID not found on user' });
+  }
 
   const invoice_no = `INV-${Date.now()}`;
-  const branchId = req.user.branch;
+  const items = [];
 
-  Product.findOne({ product })
-    .then(productDoc => {
-      if (!productDoc) {
-        res.status(404).json({ message: 'Product not found' });
-        return Promise.reject();
+  let branchDoc;
+
+  Branch.findById(branchId)
+    .then(branch => {
+      if (!branch) throw { status: 404, message: 'Branch not found' };
+      branchDoc = branch;
+
+      // Process products sequentially using Promise chaining
+      let promiseChain = Promise.resolve();
+
+      for (let i = 0; i < len; i++) {
+        promiseChain = promiseChain.then(() => {
+          const productName = product[i];
+          const soldQty = Number(qty[i]);
+          const unitCode = unitcode[i];
+          const itemRate = Number(rate[i]);
+          const itemTotal = Number(total[i]);
+
+          return Product.findOne({ product: productName }).then(productDoc => {
+            if (!productDoc) throw { status: 404, message: `Product not found: ${productName}` };
+
+            const sellingVariant = productDoc.variants.find(v => v.unitCode === unitCode);
+            const baseVariant = productDoc.variants[0];
+
+            if (!sellingVariant || !baseVariant) {
+              throw { status: 400, message: `Unit variant not found for product: ${productName}` };
+            }
+
+            let qtyToDeductFromBase;
+            if (unitCode === baseVariant.unitCode) {
+              qtyToDeductFromBase = soldQty;
+            } else {
+              if (baseVariant.quantity === 0) {
+                throw { status: 400, message: `Cannot calculate conversion for product ${productName} — base stock is 0` };
+              }
+              const conversionFactor = sellingVariant.quantity / baseVariant.quantity;
+              qtyToDeductFromBase = soldQty / conversionFactor;
+            }
+
+            if (unitCode !== baseVariant.unitCode && baseVariant.quantity < qtyToDeductFromBase) {
+              throw { status: 400, message: `Insufficient stock in base unit for product: ${productName}` };
+            }
+
+            if (sellingVariant.quantity < soldQty) {
+              throw { status: 400, message: `Insufficient stock in selected unit for product: ${productName}` };
+            }
+
+            sellingVariant.quantity -= soldQty;
+            if (unitCode !== baseVariant.unitCode) {
+              baseVariant.quantity -= qtyToDeductFromBase;
+            }
+
+            baseVariant.actualRevenue = (baseVariant.actualRevenue || 0) + itemTotal;
+
+            items.push({
+              product: productDoc._id,
+              product_name: productName,
+              qty: soldQty,
+              unitcode: unitCode,
+              rate: itemRate,
+              total: itemTotal
+            });
+
+            return productDoc.save();
+          });
+        });
       }
+
+      return promiseChain;
+    })
+    .then(() => {
+      const grandTotalNum = Number(grand_total);
+      const paidAmountNum = Number(paid_amount);
+      const remainingAmount = grandTotalNum - paidAmountNum;
 
       const newInvoice = new Invoice({
-        invoice_no, 
+        invoice_no,
         customer_id,
         customer_name,
-        createdAt,
-        product: productDoc._id,
-        qty: soldQty,
-        unitcode,
-        rate,
-        total: saleTotal,
-        paid_amount: paid,
-        remaining_amount: remaining,
+        payment_date,
+        sales_type,
+        discount: Number(discount),
+        items,
+        paid_amount: paidAmountNum,
+        remaining_amount: remainingAmount,
         payment_type,
-        branch: branchId // save user's branch
+        grand_total: grandTotalNum,
+        branch: branchId
       });
 
-      return newInvoice.save().then(() => productDoc);
-    })
-    .then(productDoc => {
-      const variants = productDoc.variants;
-      const sellingVariant = variants.find(v => v.unitCode === unitcode);
-      const baseVariant = variants[0];
-
-      if (!sellingVariant || !baseVariant) {
-        res.status(404).json({ message: 'Unit variant not found' });
-        return Promise.reject();
-      }
-
-      let conversionFactor = 1;
-      let qtyToDeductFromBase;
-
-      if (unitcode === baseVariant.unitCode) {
-        qtyToDeductFromBase = soldQty;
-      } else {
-        const subQty = sellingVariant.quantity;
-        const baseQty = baseVariant.quantity;
-
-        if (baseQty === 0) {
-          res.status(400).json({ message: 'Cannot calculate conversion — base stock is 0' });
-          return Promise.reject();
-        }
-
-        conversionFactor = subQty / baseQty;
-        qtyToDeductFromBase = soldQty / conversionFactor;
-      }
-
-      if (unitcode !== baseVariant.unitCode && baseVariant.quantity < qtyToDeductFromBase) {
-        res.status(400).json({ message: 'Insufficient stock in base unit' });
-        return Promise.reject();
-      }
-
-      if (sellingVariant.quantity < soldQty) {
-        res.status(400).json({ message: 'Insufficient stock in selected unit' });
-        return Promise.reject();
-      }
-
-      // Deduct stock
-      sellingVariant.quantity -= soldQty;
-      if (unitcode !== baseVariant.unitCode) {
-        baseVariant.quantity -= qtyToDeductFromBase;
-      }
-
-      // Update revenue
-      baseVariant.actualRevenue += paid;
-
-      return productDoc.save();
+      return newInvoice.save();
     })
     .then(() => Customer.findById(customer_id))
     .then(customer => {
-      if (!customer) {
-        res.status(404).json({ message: 'Customer not found' });
-        return Promise.reject();
-      }
+      if (!customer) throw { status: 404, message: 'Customer not found' };
 
-      customer.transactions.push({
-        product,
-        qty: soldQty,
-        unit_code: unitcode,
-        rate: Number(rate),
-        total: saleTotal,
-        paid_amount: paid,
-        remaining_amount: remaining
+      items.forEach(item => {
+        customer.transactions.push({
+          product: item.product_name,
+          qty: item.qty,
+          unit_code: item.unitcode,
+          rate: item.rate,
+          total: item.total,
+          paid_amount: item.total,
+          remaining_amount: 0
+        });
       });
 
       return customer.save();
     })
     .then(() => {
-      res.status(200).json({ message: 'Sale recorded successfully' });
+      const grandTotalNum = Number(grand_total);
+      const paidAmountNum = Number(paid_amount);
+      const remainingAmount = grandTotalNum - paidAmountNum;
+
+      if (sales_type === 'credit') {
+        branchDoc.totalCreditSales += grandTotalNum;
+        branchDoc.totalDebtorsPayment += remainingAmount;
+      } else if (sales_type === 'cash') {
+        branchDoc.totalCashSalesAmount += paidAmountNum;
+      }
+
+      branchDoc.totalSales = branchDoc.totalCashSalesAmount + branchDoc.totalCreditSales;
+
+      return branchDoc.save();
+    })
+    .then(() => {
+      res.status(200).json({ message: 'Invoice saved successfully' });
     })
     .catch(err => {
-      console.error('Sales error:', err);
-      if (!res.headersSent) {
-        res.status(500).json({ message: 'Internal Server Error' });
+      console.error('AddInvoice error:', err);
+      if (err.status && err.message) {
+        return res.status(err.status).json({ message: err.message });
       }
+      res.status(500).json({ message: 'Internal server error' });
     });
 });
+
 
 
 
@@ -2546,7 +2605,7 @@ router.get("/deleteEachReceivedStock/:id", (req, res) => {
     .then(stock => {
       if (!stock) {
         res.status(404).send("Received stock not found");
-        return Promise.reject(); // stop the chain
+        return Promise.reject(); 
       }
 
       let index = 0;
